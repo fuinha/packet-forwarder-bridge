@@ -393,6 +393,11 @@ func newGatewayStatsPacket(mac lorawan.EUI64, stat Stat) gw.GatewayStatsPacket {
 		Altitude:            float64(stat.Alti),
 		RXPacketsReceived:   int(stat.RXNb),
 		RXPacketsReceivedOK: int(stat.RXOK),
+		CustomData: map[string]interface{}{
+			"platform":     stat.Pfrm,
+			"contactEmail": stat.Mail,
+			"description":  stat.Desc,
+		},
 	}
 }
 
