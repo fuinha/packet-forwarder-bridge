@@ -33,6 +33,7 @@ func run(c *cli.Context) error {
 		log.Fatalf("could not setup ttn backend: %s", err)
 	}
 	defer ttn.Close()
+	ttn.SetRxRateLimit(10)
 
 	onNew := func(mac lorawan.EUI64) error {
 		return ttn.SubscribeGatewayTX(mac)

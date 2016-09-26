@@ -13,6 +13,7 @@ import (
 
 	"github.com/TheThingsNetwork/ttn/api"
 	"github.com/TheThingsNetwork/ttn/core/types"
+	metrics "github.com/rcrowley/go-metrics"
 
 	log "github.com/Sirupsen/logrus"
 	pb_discovery "github.com/TheThingsNetwork/ttn/api/discovery"
@@ -25,8 +26,9 @@ import (
 	"github.com/brocaar/lorawan/band"
 )
 
-type gatewayConn struct {
+type gtw struct {
 	uplink         pb_router.Router_UplinkClient
+	rxRate         metrics.EWMA
 	downlink       pb_router.Router_SubscribeClient
 	downlinkCancel context.CancelFunc
 	stat           pb_router.Router_GatewayStatusClient
@@ -37,24 +39,28 @@ type Backend struct {
 	token        string
 	conn         *grpc.ClientConn
 	client       pb_router.RouterClient
+	rxRateLimit  float64
 	txPacketChan chan gw.TXPacketBytes
-	gateways     map[lorawan.EUI64]*gatewayConn
+	gateways     map[lorawan.EUI64]*gtw
 	mutex        sync.RWMutex
 }
 
-func (b *Backend) getConn(mac lorawan.EUI64) *gatewayConn {
-	// We're going to be optimistic and guess that the gateway is already active
+func (b *Backend) getGtw(mac lorawan.EUI64) *gtw {
+	defer b.mutex.RUnlock()
 	b.mutex.RLock()
-	gtw, ok := b.gateways[mac]
-	b.mutex.RUnlock()
-	if ok {
+	if gtw, ok := b.gateways[mac]; ok {
 		return gtw
 	}
-	// If it doesn't we still have to lock
-	b.mutex.Lock()
+	return nil
+}
+
+func (b *Backend) newGtw(mac lorawan.EUI64) *gtw {
 	defer b.mutex.Unlock()
+	b.mutex.Lock()
 	if _, ok := b.gateways[mac]; !ok {
-		b.gateways[mac] = &gatewayConn{}
+		b.gateways[mac] = &gtw{
+			rxRate: metrics.NewEWMA1(),
+		}
 	}
 	return b.gateways[mac]
 }
@@ -64,7 +70,7 @@ func NewBackend(discovery, router, token string) (*Backend, error) {
 	b := Backend{
 		token:        token,
 		txPacketChan: make(chan gw.TXPacketBytes),
-		gateways:     make(map[lorawan.EUI64]*gatewayConn),
+		gateways:     make(map[lorawan.EUI64]*gtw),
 	}
 
 	var routerConn *grpc.ClientConn
@@ -100,11 +106,34 @@ func NewBackend(discovery, router, token string) (*Backend, error) {
 	b.conn = routerConn
 	b.client = pb_router.NewRouterClient(routerConn)
 
+	// Tick gateway rates
+	go func() {
+		for {
+			b.tick()
+			time.Sleep(5 * time.Second)
+		}
+	}()
+
 	return &b, nil
+}
+
+// SetRxRateLimit limits the rate at which gateways can send Rx (per minute).
+func (b *Backend) SetRxRateLimit(limit float64) {
+	b.rxRateLimit = limit
+}
+
+func (b *Backend) tick() {
+	defer b.mutex.RUnlock()
+	b.mutex.RLock()
+	for _, gtw := range b.gateways {
+		gtw.rxRate.Tick()
+	}
 }
 
 // Close closes the backend.
 func (b *Backend) Close() {
+	defer b.mutex.Unlock()
+	b.mutex.Lock()
 	for _, gtw := range b.gateways {
 		if gtw.uplink != nil {
 			gtw.uplink.CloseSend()
@@ -116,9 +145,7 @@ func (b *Backend) Close() {
 			gtw.stat.CloseSend()
 		}
 	}
-	<-time.After(1 * time.Second)
 	b.conn.Close()
-	<-time.After(1 * time.Second)
 }
 
 // TXPacketChan returns the TXPacketBytes channel.
@@ -129,26 +156,29 @@ func (b *Backend) TXPacketChan() chan gw.TXPacketBytes {
 // SubscribeGatewayTX subscribes the backend to the gateway TXPacket
 // topic (packets the gateway needs to transmit).
 func (b *Backend) SubscribeGatewayTX(mac lorawan.EUI64) error {
-	conn := b.getConn(mac)
-	if conn.downlink != nil {
+	gtw := b.getGtw(mac)
+	if gtw == nil {
+		gtw = b.newGtw(mac)
+	}
+	if gtw.downlink != nil {
 		return nil
 	}
 
-	ctx, cancel := b.getContext(mac)
-	conn.downlinkCancel = cancel
-
 	go func() {
 		for {
+			ctx, cancel := b.getContext(mac)
+			gtw.downlinkCancel = cancel
+
 			stream, err := b.client.Subscribe(ctx, &pb_router.SubscribeRequest{})
 			if err != nil {
 				<-time.After(api.Backoff)
 				continue
 			}
-			conn.downlink = stream
+			gtw.downlink = stream
 
 			for {
 				in, err := stream.Recv()
-				if err != nil && grpc.Code(err) == codes.Canceled {
+				if err != nil && (grpc.Code(err) == codes.Canceled || grpc.Code(err) == codes.Aborted || grpc.Code(err) == codes.Unavailable) {
 					break
 				}
 				if err != nil {
@@ -189,6 +219,8 @@ func (b *Backend) SubscribeGatewayTX(mac lorawan.EUI64) error {
 				txPacket.PHYPayload = in.Payload
 				b.txPacketChan <- txPacket
 			}
+
+			cancel()
 		}
 	}()
 
@@ -198,10 +230,13 @@ func (b *Backend) SubscribeGatewayTX(mac lorawan.EUI64) error {
 // UnSubscribeGatewayTX unsubscribes the backend from the gateway TXPacket
 // topic.
 func (b *Backend) UnSubscribeGatewayTX(mac lorawan.EUI64) error {
-	conn := b.getConn(mac)
-	if conn.downlink != nil {
-		conn.downlinkCancel()
-		conn.downlink = nil
+	gtw := b.getGtw(mac)
+	if gtw == nil {
+		return nil
+	}
+	if gtw.downlink != nil {
+		gtw.downlinkCancel()
+		gtw.downlink = nil
 	}
 	return nil
 }
@@ -243,20 +278,30 @@ func convertRXPacket(rxPacket gw.RXPacketBytes) *pb_router.UplinkMessage {
 
 // PublishGatewayRX publishes a RX packet to the MQTT broker.
 func (b *Backend) PublishGatewayRX(mac lorawan.EUI64, rxPacket gw.RXPacketBytes) error {
-	conn := b.getConn(mac)
-	if conn.uplink == nil {
+	gtw := b.getGtw(mac)
+	if gtw == nil {
+		gtw = b.newGtw(mac)
+	}
+
+	gtw.rxRate.Update(1)
+
+	if b.rxRateLimit > 0 && gtw.rxRate.Rate() > b.rxRateLimit {
+		return nil
+	}
+
+	if gtw.uplink == nil {
 		ctx, _ := b.getContext(mac)
 		uplink, err := b.client.Uplink(ctx)
 		if err != nil {
 			return err
 		}
-		conn.uplink = uplink
+		gtw.uplink = uplink
 	}
 	pkt := convertRXPacket(rxPacket)
-	err := conn.uplink.Send(pkt)
-	if err != nil && (grpc.Code(err) == codes.Canceled || grpc.Code(err) == codes.Internal) {
-		conn.uplink = nil
-		// TODO: Maybe retry?
+	err := gtw.uplink.Send(pkt)
+	if err != nil && (grpc.Code(err) == codes.Canceled || grpc.Code(err) == codes.Aborted || grpc.Code(err) == codes.Unavailable) {
+		gtw.uplink.CloseSend()
+		gtw.uplink = nil
 	}
 	return err
 }
@@ -297,19 +342,22 @@ func convertStatsPacket(stats gw.GatewayStatsPacket) *pb_gateway.Status {
 
 // PublishGatewayStats publishes a GatewayStatsPacket to the MQTT broker.
 func (b *Backend) PublishGatewayStats(mac lorawan.EUI64, stats gw.GatewayStatsPacket) error {
-	conn := b.getConn(mac)
-	if conn.stat == nil {
+	gtw := b.getGtw(mac)
+	if gtw == nil {
+		gtw = b.newGtw(mac)
+	}
+	if gtw.stat == nil {
 		ctx, _ := b.getContext(mac)
 		stat, err := b.client.GatewayStatus(ctx)
 		if err != nil {
 			return err
 		}
-		conn.stat = stat
+		gtw.stat = stat
 	}
-	err := conn.stat.Send(convertStatsPacket(stats))
-	if err != nil && (grpc.Code(err) == codes.Canceled || grpc.Code(err) == codes.Internal) {
-		conn.stat = nil
-		// TODO: Maybe retry?
+	err := gtw.stat.Send(convertStatsPacket(stats))
+	if err != nil && (grpc.Code(err) == codes.Canceled || grpc.Code(err) == codes.Aborted || grpc.Code(err) == codes.Unavailable) {
+		gtw.stat.CloseSend()
+		gtw.stat = nil
 	}
 	return err
 }
