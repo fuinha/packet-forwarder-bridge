@@ -5,40 +5,33 @@ import (
 	"sync"
 	"time"
 
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
-
-	"golang.org/x/net/context"
-
-	"github.com/TheThingsNetwork/ttn/api"
-	"github.com/TheThingsNetwork/ttn/core/types"
-	metrics "github.com/rcrowley/go-metrics"
-
 	log "github.com/Sirupsen/logrus"
+	"github.com/TheThingsNetwork/ttn/api"
 	pb_discovery "github.com/TheThingsNetwork/ttn/api/discovery"
 	pb_gateway "github.com/TheThingsNetwork/ttn/api/gateway"
 	pb_protocol "github.com/TheThingsNetwork/ttn/api/protocol"
 	pb_lorawan "github.com/TheThingsNetwork/ttn/api/protocol/lorawan"
 	pb_router "github.com/TheThingsNetwork/ttn/api/router"
+	"github.com/TheThingsNetwork/ttn/core/types"
 	"github.com/brocaar/loraserver/api/gw"
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/band"
+	metrics "github.com/rcrowley/go-metrics"
 )
 
+func init() {
+	api.SetLogger(logger{})
+}
+
 type gtw struct {
-	uplink         pb_router.Router_UplinkClient
-	rxRate         metrics.EWMA
-	downlink       pb_router.Router_SubscribeClient
-	downlinkCancel context.CancelFunc
-	stat           pb_router.Router_GatewayStatusClient
+	client pb_router.GatewayClient
+	rxRate metrics.EWMA
 }
 
 // Backend implements the TTN backend
 type Backend struct {
 	token        string
-	conn         *grpc.ClientConn
-	client       pb_router.RouterClient
+	client       *pb_router.Client
 	rxRateLimit  float64
 	txPacketChan chan gw.TXPacketBytes
 	gateways     map[lorawan.EUI64]*gtw
@@ -59,6 +52,9 @@ func (b *Backend) newGtw(mac lorawan.EUI64) *gtw {
 	b.mutex.Lock()
 	if _, ok := b.gateways[mac]; !ok {
 		b.gateways[mac] = &gtw{
+			client: b.client.ForGateway(fmt.Sprintf("eui-%s", mac), func() string {
+				return "token"
+			}),
 			rxRate: metrics.NewEWMA1(),
 		}
 	}
@@ -73,38 +69,32 @@ func NewBackend(discovery, router, token string) (*Backend, error) {
 		gateways:     make(map[lorawan.EUI64]*gtw),
 	}
 
-	var routerConn *grpc.ClientConn
-	if discovery != "" {
-		discoveryConn, err := grpc.Dial(discovery, append(api.DialOptions, grpc.WithInsecure())...)
-		if err != nil {
-			return nil, err
-		}
-		discovery := pb_discovery.NewDiscoveryClient(discoveryConn)
-		md := metadata.Pairs(
-			"service-name", "lora-gateway-bridge",
-		)
-		ctx := metadata.NewContext(context.Background(), md)
-		router, err := discovery.Get(ctx, &pb_discovery.GetRequest{
-			ServiceName: "router",
-			Id:          router,
-		})
-		if err != nil {
-			return nil, err
-		}
-		routerConn, err = router.Dial()
-		if err != nil {
-			return nil, err
-		}
+	var announcement pb_discovery.Announcement
+	if discovery == "" {
+		announcement.NetAddress = router
 	} else {
-		var err error
-		routerConn, err = grpc.Dial(router, append(api.DialOptions, grpc.WithInsecure())...)
+		discovery, err := pb_discovery.NewClient(discovery, &pb_discovery.Announcement{
+			ServiceName: "lora-gateway-bridge",
+			Id:          getID(),
+		}, func() string { return "" })
 		if err != nil {
 			return nil, err
 		}
+		defer discovery.Close()
+
+		router, err := discovery.Get("router", router)
+		if err != nil {
+			return nil, err
+		}
+
+		announcement = *router
 	}
 
-	b.conn = routerConn
-	b.client = pb_router.NewRouterClient(routerConn)
+	routerClient, err := pb_router.NewClient(&announcement)
+	if err != nil {
+		return nil, err
+	}
+	b.client = routerClient
 
 	// Tick gateway rates
 	go func() {
@@ -135,17 +125,9 @@ func (b *Backend) Close() {
 	defer b.mutex.Unlock()
 	b.mutex.Lock()
 	for _, gtw := range b.gateways {
-		if gtw.uplink != nil {
-			gtw.uplink.CloseSend()
-		}
-		if gtw.downlink != nil {
-			gtw.downlinkCancel()
-		}
-		if gtw.stat != nil {
-			gtw.stat.CloseSend()
-		}
+		gtw.client.Close()
 	}
-	b.conn.Close()
+	b.client.Close()
 }
 
 // TXPacketChan returns the TXPacketBytes channel.
@@ -160,32 +142,24 @@ func (b *Backend) SubscribeGatewayTX(mac lorawan.EUI64) error {
 	if gtw == nil {
 		gtw = b.newGtw(mac)
 	}
-	if gtw.downlink != nil {
-		return nil
+
+	downChan, errChan, err := gtw.client.Subscribe()
+	if err != nil {
+		return err
 	}
 
 	go func() {
 		for {
-			ctx, cancel := b.getContext(mac)
-			gtw.downlinkCancel = cancel
-
-			stream, err := b.client.Subscribe(ctx, &pb_router.SubscribeRequest{})
-			if err != nil {
-				<-time.After(api.Backoff)
-				continue
-			}
-			gtw.downlink = stream
-
-			for {
-				in, err := stream.Recv()
-				if err != nil && (grpc.Code(err) == codes.Canceled || grpc.Code(err) == codes.Aborted || grpc.Code(err) == codes.Unavailable) {
-					break
-				}
+			select {
+			case err := <-errChan:
 				if err != nil {
 					log.Errorf("backend/thethingsnetwork: error in downlink stream: %s", err)
-					<-time.After(api.Backoff)
-					break
 				}
+			case in := <-downChan:
+				if in == nil {
+					continue
+				}
+
 				log.WithField("gateway", mac).Info("backend/thethingsnetwork: message received")
 				lora := in.ProtocolConfiguration.GetLorawan()
 				if lora == nil {
@@ -219,8 +193,6 @@ func (b *Backend) SubscribeGatewayTX(mac lorawan.EUI64) error {
 				txPacket.PHYPayload = in.Payload
 				b.txPacketChan <- txPacket
 			}
-
-			cancel()
 		}
 	}()
 
@@ -234,11 +206,7 @@ func (b *Backend) UnSubscribeGatewayTX(mac lorawan.EUI64) error {
 	if gtw == nil {
 		return nil
 	}
-	if gtw.downlink != nil {
-		gtw.downlinkCancel()
-		gtw.downlink = nil
-	}
-	return nil
+	return gtw.client.Unsbscribe()
 }
 
 func convertRXPacket(rxPacket gw.RXPacketBytes) *pb_router.UplinkMessage {
@@ -282,28 +250,11 @@ func (b *Backend) PublishGatewayRX(mac lorawan.EUI64, rxPacket gw.RXPacketBytes)
 	if gtw == nil {
 		gtw = b.newGtw(mac)
 	}
-
 	gtw.rxRate.Update(1)
-
 	if b.rxRateLimit > 0 && gtw.rxRate.Rate() > b.rxRateLimit {
 		return nil
 	}
-
-	if gtw.uplink == nil {
-		ctx, _ := b.getContext(mac)
-		uplink, err := b.client.Uplink(ctx)
-		if err != nil {
-			return err
-		}
-		gtw.uplink = uplink
-	}
-	pkt := convertRXPacket(rxPacket)
-	err := gtw.uplink.Send(pkt)
-	if err != nil && (grpc.Code(err) == codes.Canceled || grpc.Code(err) == codes.Aborted || grpc.Code(err) == codes.Unavailable) {
-		gtw.uplink.CloseSend()
-		gtw.uplink = nil
-	}
-	return err
+	return gtw.client.SendUplink(convertRXPacket(rxPacket))
 }
 
 func convertStatsPacket(stats gw.GatewayStatsPacket) *pb_gateway.Status {
@@ -312,7 +263,6 @@ func convertStatsPacket(stats gw.GatewayStatsPacket) *pb_gateway.Status {
 		RxIn: uint32(stats.RXPacketsReceived),
 		RxOk: uint32(stats.RXPacketsReceivedOK),
 	}
-
 	if platform, ok := stats.CustomData["platform"]; ok {
 		if platform, ok := platform.(string); ok {
 			status.Platform = string(platform)
@@ -328,7 +278,6 @@ func convertStatsPacket(stats gw.GatewayStatsPacket) *pb_gateway.Status {
 			status.Description = string(description)
 		}
 	}
-
 	if stats.Latitude != 0 || stats.Longitude != 0 || stats.Altitude != 0 {
 		status.Gps = &pb_gateway.GPSMetadata{
 			Latitude:  float32(stats.Latitude),
@@ -336,7 +285,6 @@ func convertStatsPacket(stats gw.GatewayStatsPacket) *pb_gateway.Status {
 			Altitude:  int32(stats.Altitude),
 		}
 	}
-
 	return status
 }
 
@@ -346,26 +294,5 @@ func (b *Backend) PublishGatewayStats(mac lorawan.EUI64, stats gw.GatewayStatsPa
 	if gtw == nil {
 		gtw = b.newGtw(mac)
 	}
-	if gtw.stat == nil {
-		ctx, _ := b.getContext(mac)
-		stat, err := b.client.GatewayStatus(ctx)
-		if err != nil {
-			return err
-		}
-		gtw.stat = stat
-	}
-	err := gtw.stat.Send(convertStatsPacket(stats))
-	if err != nil && (grpc.Code(err) == codes.Canceled || grpc.Code(err) == codes.Aborted || grpc.Code(err) == codes.Unavailable) {
-		gtw.stat.CloseSend()
-		gtw.stat = nil
-	}
-	return err
-}
-
-func (b *Backend) getContext(mac lorawan.EUI64) (context.Context, context.CancelFunc) {
-	md := metadata.Pairs(
-		"token", b.token,
-		"id", fmt.Sprintf("eui-%s", mac),
-	)
-	return context.WithCancel(metadata.NewContext(context.Background(), md))
+	return gtw.client.SendGatewayStatus(convertStatsPacket(stats))
 }
