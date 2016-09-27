@@ -1,0 +1,52 @@
+// Copyright © 2016 The Things Network
+// Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+
+syntax = "proto3";
+
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+package lorawan;
+
+enum Modulation {
+  LORA = 0;
+  FSK  = 1;
+}
+
+message Metadata {
+  Modulation  modulation   = 11;
+  string      data_rate    = 12; // LoRa data rate - SF{spreadingfactor}BW{bandwidth}
+  uint32      bit_rate     = 13; // FSK bit rate in bit/s
+  string      coding_rate  = 14; // LoRa coding rate
+
+  uint32      f_cnt = 15; // Store the full 32 bit FCnt
+}
+
+message TxConfiguration {
+  Modulation  modulation   = 11;
+  string      data_rate    = 12; // LoRa data rate - SF{spreadingfactor}BW{bandwidth}
+  uint32      bit_rate     = 13; // FSK bit rate in bit/s
+  string      coding_rate  = 14; // LoRa coding rate
+
+  uint32      f_cnt = 15; // Store the full 32 bit FCnt
+}
+
+message ActivationMetadata {
+  bytes app_eui    = 1 [(gogoproto.customtype) = "github.com/TheThingsNetwork/ttn/core/types.AppEUI"];
+  bytes dev_eui    = 2 [(gogoproto.customtype) = "github.com/TheThingsNetwork/ttn/core/types.DevEUI"];
+  bytes dev_addr   = 3 [(gogoproto.customtype) = "github.com/TheThingsNetwork/ttn/core/types.DevAddr"];
+  bytes nwk_s_key  = 4 [(gogoproto.customtype) = "github.com/TheThingsNetwork/ttn/core/types.NwkSKey"];
+
+  uint32 rx1_dr_offset    = 11;
+  uint32 rx2_dr           = 12;
+  uint32 rx_delay         = 13;
+  repeated uint64 cf_list = 14;
+}
+
+enum Region {
+  EU_863_870 = 0;
+  US_902_928 = 1;
+  CN_779_787 = 2;
+  EU_433     = 3;
+  AU_915_928 = 4;
+  CN_470_510 = 5;
+}

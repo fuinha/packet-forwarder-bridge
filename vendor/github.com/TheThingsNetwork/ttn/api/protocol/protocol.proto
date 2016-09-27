@@ -1,0 +1,26 @@
+// Copyright © 2016 The Things Network
+// Use of this source code is governed by the MIT license that can be found in the LICENSE file.
+
+syntax = "proto3";
+
+import "github.com/TheThingsNetwork/ttn/api/protocol/lorawan/lorawan.proto";
+
+package protocol;
+
+message RxMetadata {
+  oneof protocol {
+    lorawan.Metadata lorawan = 1;
+  }
+}
+
+message TxConfiguration {
+  oneof protocol {
+    lorawan.TxConfiguration lorawan = 1;
+  }
+}
+
+message ActivationMetadata {
+  oneof protocol {
+    lorawan.ActivationMetadata lorawan = 1;
+  }
+}
