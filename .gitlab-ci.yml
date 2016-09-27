@@ -1,0 +1,52 @@
+stages:
+  - test
+  - build
+  - package
+
+variables:
+  PACKAGE_NAME: github.com/brocaar/lora-gateway-bridge
+  CONTAINER_NAME: $CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME
+
+before_script:
+  - mkdir -p $GOPATH/src/$PACKAGE_NAME
+  - cp -R . $GOPATH/src/$PACKAGE_NAME
+
+tests:
+  stage: test
+  image: golang:latest
+  services:
+    - ansi/mosquitto
+  variables:
+    TEST_MQTT_SERVER: tcp://ansi-mosquitto:1883
+  script:
+    - go get github.com/golang/lint/golint
+    - go get github.com/kisielk/errcheck
+    - pushd $GOPATH/src/$PACKAGE_NAME
+    - make test
+    - popd
+
+binaries:
+  stage: build
+  image: golang:latest
+  script:
+    - pushd $GOPATH/src/$PACKAGE_NAME
+    - make build
+    - popd
+    - mkdir build
+    - cp -R $GOPATH/src/$PACKAGE_NAME/build/* build/
+  artifacts:
+    paths:
+      - build/
+
+container:
+  stage: package
+  image: docker:git
+  services:
+    - "docker:dind"
+  script:
+    - cd $GOPATH/src/$PACKAGE_NAME
+    - docker build -t $CONTAINER_NAME .
+    - docker login -u "gitlab-ci-token" -p "$CI_BUILD_TOKEN" registry.gitlab.com
+    - docker tag $CONTAINER_NAME registry.gitlab.com/$CONTAINER_NAME:$CI_BUILD_REF_NAME
+    - if [[ "$CI_BUILD_REF_NAME" == "master" ]]; then docker tag $CONTAINER_NAME registry.gitlab.com/$CONTAINER_NAME:latest; fi
+    - docker push registry.gitlab.com/$CONTAINER_NAME
