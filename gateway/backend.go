@@ -329,6 +329,10 @@ func (b *Backend) handleStat(addr *net.UDPAddr, mac lorawan.EUI64, stat Stat) {
 		"addr": addr,
 		"mac":  mac,
 	}).Info("gateway: stat packet received")
+	addIPToGatewayStatsPacket(&gwStats, addr.IP)
+	if gtw, err := b.gateways.get(mac); err != nil && gtw.addr != nil {
+		addIPToGatewayStatsPacket(&gwStats, gtw.addr.IP)
+	}
 	b.statsChan <- gwStats
 }
 
@@ -397,6 +401,7 @@ func newGatewayStatsPacket(mac lorawan.EUI64, stat Stat) gw.GatewayStatsPacket {
 			"platform":     stat.Pfrm,
 			"contactEmail": stat.Mail,
 			"description":  stat.Desc,
+			"ip":           []string{},
 		},
 	}
 }

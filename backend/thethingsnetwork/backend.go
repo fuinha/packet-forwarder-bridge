@@ -278,6 +278,11 @@ func convertStatsPacket(stats gw.GatewayStatsPacket) *pb_gateway.Status {
 			status.Description = string(description)
 		}
 	}
+	if ip, ok := stats.CustomData["ip"]; ok {
+		if ip, ok := ip.([]string); ok {
+			status.Ip = ip
+		}
+	}
 	if stats.Latitude != 0 || stats.Longitude != 0 || stats.Altitude != 0 {
 		status.Gps = &pb_gateway.GPSMetadata{
 			Latitude:  float32(stats.Latitude),

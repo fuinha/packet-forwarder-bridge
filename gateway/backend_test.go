@@ -259,6 +259,7 @@ func TestNewGatewayStatPacket(t *testing.T) {
 						"platform":     "The Things Gateway",
 						"contactEmail": "admin@gateway.net",
 						"description":  "My Gateway",
+						"ip":           []string{},
 					},
 				})
 			})
