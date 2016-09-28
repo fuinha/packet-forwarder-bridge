@@ -38,15 +38,30 @@ binaries:
     paths:
       - build/
 
-container:
+gitlab-image:
   stage: package
   image: docker:git
   services:
     - "docker:dind"
   script:
     - cd $GOPATH/src/$PACKAGE_NAME
-    - docker build -t $CONTAINER_NAME .
+    - docker build -t $CI_PROJECT_NAME .
     - docker login -u "gitlab-ci-token" -p "$CI_BUILD_TOKEN" registry.gitlab.com
-    - docker tag $CONTAINER_NAME registry.gitlab.com/$CONTAINER_NAME:$CI_BUILD_REF_NAME
-    - if [[ "$CI_BUILD_REF_NAME" == "master" ]]; then docker tag $CONTAINER_NAME registry.gitlab.com/$CONTAINER_NAME:latest; fi
+    - docker tag $CI_PROJECT_NAME registry.gitlab.com/$CONTAINER_NAME:$CI_BUILD_REF_NAME
+    - if [[ "$CI_BUILD_REF_NAME" == "master" ]]; then docker tag $CI_PROJECT_NAME registry.gitlab.com/$CONTAINER_NAME:latest; fi
     - docker push registry.gitlab.com/$CONTAINER_NAME
+
+dockerhub-image:
+  only:
+    - master@thethingsnetwork/lora-gateway-bridge
+  stage: package
+  image: docker:git
+  services:
+    - "docker:dind"
+  script:
+    - cd $GOPATH/src/$PACKAGE_NAME
+    - docker build -t $CI_PROJECT_NAME .
+    - docker login -u "$DOCKERHUB_USER" -p "$DOCKERHUB_PASSWORD"
+    - docker tag $CI_PROJECT_NAME $CONTAINER_NAME:$CI_BUILD_REF_NAME
+    - docker tag $CI_PROJECT_NAME $CONTAINER_NAME:latest
+    - docker push $CONTAINER_NAME
