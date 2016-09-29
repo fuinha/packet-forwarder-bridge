@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/brocaar/lorawan"
 )
 
 // Name defines the band-name type.
@@ -111,6 +113,10 @@ type Band struct {
 	// getRX1ChannelFunc implements a function which returns the RX1 channel
 	// based on the uplink / TX channel.
 	getRX1ChannelFunc func(txChannel int) int
+
+	// getRX1FrequencyFunc implements a function which returns the RX1 frequency
+	// given the uplink frequency.
+	getRX1FrequencyFunc func(band *Band, txFrequency int) (int, error)
 }
 
 // GetRX1Channel returns the channel to use for RX1 given the channel used
@@ -119,19 +125,43 @@ func (b *Band) GetRX1Channel(txChannel int) int {
 	return b.getRX1ChannelFunc(txChannel)
 }
 
-// GetChannel returns the channel index given a frequency and
-// data-rate index.
-func (b *Band) GetChannel(frequency, dataRate int) (int, error) {
+// GetRX1Frequency returns the frequency to use for RX1 given the uplink
+// frequency.
+func (b *Band) GetRX1Frequency(txFrequency int) (int, error) {
+	return b.getRX1FrequencyFunc(b, txFrequency)
+}
+
+// GetChannel returns the channel index given a frequency and an optional CFList.
+func (b *Band) GetChannel(frequency int, cFlist *lorawan.CFList) (int, error) {
 	for chanNum, channel := range b.UplinkChannels {
 		if frequency == channel.Frequency {
-			for _, dr := range channel.DataRates {
-				if dr == dataRate {
-					return chanNum, nil
-				}
+			return chanNum, nil
+		}
+	}
+
+	if cFlist != nil {
+		for chanNum, channel := range cFlist {
+			if frequency == int(channel) {
+				return chanNum + len(b.UplinkChannels), nil
 			}
 		}
 	}
-	return 0, fmt.Errorf("lorawan/band: unknown channel for frequency: %d and data-rate: %d", frequency, dataRate)
+
+	return 0, fmt.Errorf("lorawan/band: unknown channel for frequency: %d", frequency)
+}
+
+// GetDownlinkFrequency returns the frequency for the given the channel number
+// and an optional CFList.
+func (b *Band) GetDownlinkFrequency(channel int, cFlist *lorawan.CFList) (int, error) {
+	if channel < len(b.DownlinkChannels) {
+		return b.DownlinkChannels[channel].Frequency, nil
+	}
+
+	if cFlist != nil && channel < len(b.DownlinkChannels)+len(cFlist) {
+		return int(cFlist[channel-len(b.DownlinkChannels)]), nil
+	}
+
+	return 0, fmt.Errorf("lorawan/band: channel %d is invalid", channel)
 }
 
 // GetDataRate returns the index of the given DataRate.

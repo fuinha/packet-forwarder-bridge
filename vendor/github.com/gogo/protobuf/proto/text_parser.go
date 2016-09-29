@@ -46,6 +46,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 	"unicode/utf8"
 )
 
@@ -779,6 +780,80 @@ func (p *textParser) readAny(v reflect.Value, props *Properties) error {
 				return p.errorf("%v %v: %v", err, v.Type(), tok.value)
 			}
 			v.Set(reflect.Indirect(reflect.ValueOf(custom)))
+		}
+		return nil
+	}
+	if props.StdTime {
+		fv := v
+		p.back()
+		props.StdTime = false
+		tproto := &timestamp{}
+		err := p.readAny(reflect.ValueOf(tproto).Elem(), props)
+		props.StdTime = true
+		if err != nil {
+			return err
+		}
+		tim, err := timestampFromProto(tproto)
+		if err != nil {
+			return err
+		}
+		if props.Repeated {
+			t := reflect.TypeOf(v.Interface())
+			if t.Kind() == reflect.Slice {
+				if t.Elem().Kind() == reflect.Ptr {
+					ts := fv.Interface().([]*time.Time)
+					ts = append(ts, &tim)
+					fv.Set(reflect.ValueOf(ts))
+					return nil
+				} else {
+					ts := fv.Interface().([]time.Time)
+					ts = append(ts, tim)
+					fv.Set(reflect.ValueOf(ts))
+					return nil
+				}
+			}
+		}
+		if reflect.TypeOf(v.Interface()).Kind() == reflect.Ptr {
+			v.Set(reflect.ValueOf(&tim))
+		} else {
+			v.Set(reflect.Indirect(reflect.ValueOf(&tim)))
+		}
+		return nil
+	}
+	if props.StdDuration {
+		fv := v
+		p.back()
+		props.StdDuration = false
+		dproto := &duration{}
+		err := p.readAny(reflect.ValueOf(dproto).Elem(), props)
+		props.StdDuration = true
+		if err != nil {
+			return err
+		}
+		dur, err := durationFromProto(dproto)
+		if err != nil {
+			return err
+		}
+		if props.Repeated {
+			t := reflect.TypeOf(v.Interface())
+			if t.Kind() == reflect.Slice {
+				if t.Elem().Kind() == reflect.Ptr {
+					ds := fv.Interface().([]*time.Duration)
+					ds = append(ds, &dur)
+					fv.Set(reflect.ValueOf(ds))
+					return nil
+				} else {
+					ds := fv.Interface().([]time.Duration)
+					ds = append(ds, dur)
+					fv.Set(reflect.ValueOf(ds))
+					return nil
+				}
+			}
+		}
+		if reflect.TypeOf(v.Interface()).Kind() == reflect.Ptr {
+			v.Set(reflect.ValueOf(&dur))
+		} else {
+			v.Set(reflect.Indirect(reflect.ValueOf(&dur)))
 		}
 		return nil
 	}
