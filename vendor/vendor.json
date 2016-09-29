@@ -39,10 +39,10 @@
 			"revisionTime": "2016-09-23T07:12:45Z"
 		},
 		{
-			"checksumSHA1": "D30gWzr6hE0XJBv0MOVff5I9Oyk=",
+			"checksumSHA1": "VKBmTxRFULEDMoeRh4ISfOr5qts=",
 			"path": "github.com/TheThingsNetwork/ttn/api/router",
-			"revision": "45ad67436ff2183a79b1521ffb714c52442ca0d9",
-			"revisionTime": "2016-09-27T13:41:17Z"
+			"revision": "37b761ef0106a33f5f3a967351a3a070e0b27ed0",
+			"revisionTime": "2016-09-28T16:21:25Z"
 		},
 		{
 			"checksumSHA1": "nq8K1ywEPU1hgTmmvZhpvEpGG4E=",

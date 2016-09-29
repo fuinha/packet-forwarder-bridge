@@ -24,8 +24,9 @@ func init() {
 }
 
 type gtw struct {
-	client pb_router.GatewayClient
-	rxRate metrics.EWMA
+	client             pb_router.GatewayClient
+	downlinkSubscribed bool
+	rxRate             metrics.EWMA
 }
 
 // Backend implements the TTN backend
@@ -138,6 +139,8 @@ func (b *Backend) TXPacketChan() chan gw.TXPacketBytes {
 // SubscribeGatewayTX subscribes the backend to the gateway TXPacket
 // topic (packets the gateway needs to transmit).
 func (b *Backend) SubscribeGatewayTX(mac lorawan.EUI64) error {
+	log := log.WithField("gateway", mac)
+
 	gtw := b.getGtw(mac)
 	if gtw == nil {
 		gtw = b.newGtw(mac)
@@ -147,20 +150,38 @@ func (b *Backend) SubscribeGatewayTX(mac lorawan.EUI64) error {
 	if err != nil {
 		return err
 	}
+	gtw.downlinkSubscribed = true
 
 	go func() {
+		defer func() {
+			log.Debug("Stopping subscribe loop")
+		}()
+		log.Debug("Starting subscribe loop")
+		backoff := 1
 		for {
 			select {
 			case err := <-errChan:
+				if err == nil {
+					return
+				}
+				log.Errorf("backend/thethingsnetwork: error in downlink stream: %s", err)
+				gtw.client.Unsubscribe()
+				log.WithField("backoff", backoff).Debug("Backing off")
+				time.Sleep(time.Duration(backoff) * time.Second)
+				backoff *= 2
+				if !gtw.downlinkSubscribed {
+					return
+				}
+				downChan, errChan, err = gtw.client.Subscribe()
 				if err != nil {
-					log.Errorf("backend/thethingsnetwork: error in downlink stream: %s", err)
+					log.Errorf("backend/thethingsnetwork: could not re-subscribe to downlink: %s", err)
+					return
 				}
 			case in := <-downChan:
 				if in == nil {
 					continue
 				}
-
-				log.WithField("gateway", mac).Info("backend/thethingsnetwork: message received")
+				log.Info("backend/thethingsnetwork: message received")
 				lora := in.ProtocolConfiguration.GetLorawan()
 				if lora == nil {
 					log.Error("backend/thethingsnetwork: received non-Lora message")
@@ -206,7 +227,8 @@ func (b *Backend) UnSubscribeGatewayTX(mac lorawan.EUI64) error {
 	if gtw == nil {
 		return nil
 	}
-	return gtw.client.Unsbscribe()
+	gtw.downlinkSubscribed = false
+	return gtw.client.Unsubscribe()
 }
 
 func convertRXPacket(rxPacket gw.RXPacketBytes) *pb_router.UplinkMessage {
