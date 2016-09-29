@@ -29,6 +29,8 @@ type gtw struct {
 	rxRate             metrics.EWMA
 }
 
+const maxBackOff = 5 * time.Minute
+
 // Backend implements the TTN backend
 type Backend struct {
 	token        string
@@ -157,7 +159,7 @@ func (b *Backend) SubscribeGatewayTX(mac lorawan.EUI64) error {
 			log.Debug("Stopping subscribe loop")
 		}()
 		log.Debug("Starting subscribe loop")
-		backoff := 1
+		backoff := time.Second
 		for {
 			select {
 			case err := <-errChan:
@@ -167,15 +169,18 @@ func (b *Backend) SubscribeGatewayTX(mac lorawan.EUI64) error {
 				log.Errorf("backend/thethingsnetwork: error in downlink stream: %s", err)
 				gtw.client.Unsubscribe()
 				log.WithField("backoff", backoff).Debug("Backing off")
-				time.Sleep(time.Duration(backoff) * time.Second)
-				backoff *= 2
+				time.Sleep(backoff)
+				if backoff*2 <= maxBackOff {
+					backoff *= 2
+				} else if backoff < maxBackOff {
+					backoff += time.Second
+				}
 				if !gtw.downlinkSubscribed {
 					return
 				}
 				downChan, errChan, err = gtw.client.Subscribe()
 				if err != nil {
 					log.Errorf("backend/thethingsnetwork: could not re-subscribe to downlink: %s", err)
-					return
 				}
 			case in := <-downChan:
 				if in == nil {
