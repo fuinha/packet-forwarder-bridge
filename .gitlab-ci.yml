@@ -65,3 +65,13 @@ dockerhub-image:
     - docker tag $CI_PROJECT_NAME $CONTAINER_NAME:$CI_BUILD_REF_NAME
     - docker tag $CI_PROJECT_NAME $CONTAINER_NAME:latest
     - docker push $CONTAINER_NAME
+
+azure-binaries:
+  only:
+    - master@thethingsnetwork/lora-gateway-bridge
+  stage: package
+  image: registry.gitlab.com/thethingsindustries/upload
+  script:
+    - cd build
+    - export STORAGE_CONTAINER=gateway-bridge STORAGE_KEY=$AZURE_STORAGE_KEY ZIP=true TGZ=true PREFIX=$CI_BUILD_REF_NAME/
+    - upload *
