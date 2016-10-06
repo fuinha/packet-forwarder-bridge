@@ -33,12 +33,13 @@ const maxBackOff = 5 * time.Minute
 
 // Backend implements the TTN backend
 type Backend struct {
-	token        string
-	client       *pb_router.Client
-	rxRateLimit  float64
-	txPacketChan chan gw.TXPacketBytes
-	gateways     map[lorawan.EUI64]*gtw
-	mutex        sync.RWMutex
+	token         string
+	client        *pb_router.Client
+	rxRateLimit   float64
+	txPacketChan  chan gw.TXPacketBytes
+	gateways      map[lorawan.EUI64]*gtw
+	gatewayStatus *pb_gateway.Status
+	mutex         sync.RWMutex
 }
 
 func (b *Backend) getGtw(mac lorawan.EUI64) *gtw {
@@ -67,9 +68,10 @@ func (b *Backend) newGtw(mac lorawan.EUI64) *gtw {
 // NewBackend creates a new Backend.
 func NewBackend(discovery, router, token string) (*Backend, error) {
 	b := Backend{
-		token:        token,
-		txPacketChan: make(chan gw.TXPacketBytes),
-		gateways:     make(map[lorawan.EUI64]*gtw),
+		token:         token,
+		txPacketChan:  make(chan gw.TXPacketBytes),
+		gateways:      make(map[lorawan.EUI64]*gtw),
+		gatewayStatus: new(pb_gateway.Status),
 	}
 
 	var announcement pb_discovery.Announcement
@@ -113,6 +115,16 @@ func NewBackend(discovery, router, token string) (*Backend, error) {
 // SetRxRateLimit limits the rate at which gateways can send Rx (per minute).
 func (b *Backend) SetRxRateLimit(limit float64) {
 	b.rxRateLimit = limit
+}
+
+// InjectRegion injects a region string into each gateway status
+func (b *Backend) InjectRegion(region string) {
+	b.gatewayStatus.Region = region
+}
+
+// InjectRTT injects a RTT into each gateway status
+func (b *Backend) InjectRTT(rtt uint) {
+	b.gatewayStatus.Rtt = uint32(rtt)
 }
 
 func (b *Backend) tick() {
@@ -236,7 +248,7 @@ func (b *Backend) UnSubscribeGatewayTX(mac lorawan.EUI64) error {
 	return gtw.client.Unsubscribe()
 }
 
-func convertRXPacket(rxPacket gw.RXPacketBytes) *pb_router.UplinkMessage {
+func (b *Backend) convertRXPacket(rxPacket gw.RXPacketBytes) *pb_router.UplinkMessage {
 	// Convert some Modulation-dependent fields
 	var modulation pb_lorawan.Modulation
 	var datarate string
@@ -281,15 +293,16 @@ func (b *Backend) PublishGatewayRX(mac lorawan.EUI64, rxPacket gw.RXPacketBytes)
 	if b.rxRateLimit > 0 && gtw.rxRate.Rate() > b.rxRateLimit {
 		return nil
 	}
-	return gtw.client.SendUplink(convertRXPacket(rxPacket))
+	return gtw.client.SendUplink(b.convertRXPacket(rxPacket))
 }
 
-func convertStatsPacket(stats gw.GatewayStatsPacket) *pb_gateway.Status {
-	status := &pb_gateway.Status{
-		Time: stats.Time.UnixNano(),
-		RxIn: uint32(stats.RXPacketsReceived),
-		RxOk: uint32(stats.RXPacketsReceivedOK),
-	}
+func (b *Backend) convertStatsPacket(stats gw.GatewayStatsPacket) *pb_gateway.Status {
+	status := *b.gatewayStatus // Copy from the defaults
+
+	status.Time = stats.Time.UnixNano()
+	status.RxIn = uint32(stats.RXPacketsReceived)
+	status.RxOk = uint32(stats.RXPacketsReceivedOK)
+
 	if platform, ok := stats.CustomData["platform"]; ok {
 		if platform, ok := platform.(string); ok {
 			status.Platform = string(platform)
@@ -317,7 +330,8 @@ func convertStatsPacket(stats gw.GatewayStatsPacket) *pb_gateway.Status {
 			Altitude:  int32(stats.Altitude),
 		}
 	}
-	return status
+
+	return &status
 }
 
 // PublishGatewayStats publishes a GatewayStatsPacket to the MQTT broker.
@@ -326,5 +340,5 @@ func (b *Backend) PublishGatewayStats(mac lorawan.EUI64, stats gw.GatewayStatsPa
 	if gtw == nil {
 		gtw = b.newGtw(mac)
 	}
-	return gtw.client.SendGatewayStatus(convertStatsPacket(stats))
+	return gtw.client.SendGatewayStatus(b.convertStatsPacket(stats))
 }

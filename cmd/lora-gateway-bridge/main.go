@@ -35,6 +35,14 @@ func run(c *cli.Context) error {
 	defer ttn.Close()
 	ttn.SetRxRateLimit(10)
 
+	if region := c.String("ttn-inject-region"); region != "" {
+		ttn.InjectRegion(region)
+	}
+
+	if rtt := c.Uint("ttn-inject-rtt"); rtt != 0 {
+		ttn.InjectRTT(rtt)
+	}
+
 	onNew := func(mac lorawan.EUI64) error {
 		return ttn.SubscribeGatewayTX(mac)
 	}
@@ -111,6 +119,18 @@ func main() {
 			Usage:  "TTN Access Token",
 			Value:  "token",
 			EnvVar: "TTN_ACCESS_TOKEN",
+		},
+		cli.StringFlag{
+			Name:   "ttn-inject-region",
+			Usage:  "TTN Region to inject into Status messages",
+			Value:  "", // Possible values: EU_863_870 US_902_928 CN_779_787 EU_433 AU_915_928 CN_470_510 AS_923 SK_920_923
+			EnvVar: "TTN_INJECT_REGION",
+		},
+		cli.UintFlag{
+			Name:   "ttn-inject-rtt",
+			Usage:  "TTN RTT to inject into Status messages",
+			Value:  0,
+			EnvVar: "TTN_INJECT_RTT",
 		},
 		cli.IntFlag{
 			Name:   "log-level",

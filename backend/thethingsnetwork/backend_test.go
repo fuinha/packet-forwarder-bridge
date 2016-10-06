@@ -63,6 +63,29 @@ func TestBackend(t *testing.T) {
 				})
 			})
 
+			Convey("When injecting a Region and RTT", func() {
+				backend.InjectRegion("EU_863_870")
+				backend.InjectRTT(300)
+
+				Convey("When publishing a GatewayStatsPacket", func() {
+					statsPacket := gw.GatewayStatsPacket{}
+
+					err := backend.PublishGatewayStats([8]byte{1, 2, 3, 4, 5, 6, 7, 8}, statsPacket)
+					So(err, ShouldBeNil)
+
+					Convey("Then the GatewayStatsPacket that was received by the TTN Router contains those Region and RTT", func() {
+						select {
+						case <-time.After(1 * time.Second):
+							panic("Did not receive")
+						case packet := <-rtr.gatewayStatus:
+							So(packet, ShouldNotBeNil)
+							So(packet.Region, ShouldEqual, "EU_863_870")
+							So(packet.Rtt, ShouldEqual, 300)
+						}
+					})
+				})
+			})
+
 			Convey("When publishing a GatewayStatsPacket", func() {
 				statsPacket := gw.GatewayStatsPacket{}
 
