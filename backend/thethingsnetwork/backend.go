@@ -180,19 +180,23 @@ func (b *Backend) SubscribeGatewayTX(mac lorawan.EUI64) error {
 				}
 				log.Errorf("backend/thethingsnetwork: error in downlink stream: %s", err)
 				gtw.client.Unsubscribe()
-				log.WithField("backoff", backoff).Debug("Backing off")
-				time.Sleep(backoff)
-				if backoff*2 <= maxBackOff {
-					backoff *= 2
-				} else if backoff < maxBackOff {
-					backoff += time.Second
-				}
-				if !gtw.downlinkSubscribed {
-					return
-				}
-				downChan, errChan, err = gtw.client.Subscribe()
-				if err != nil {
-					log.Errorf("backend/thethingsnetwork: could not re-subscribe to downlink: %s", err)
+				for err != nil {
+					log.WithField("backoff", backoff).Debug("Backing off")
+					time.Sleep(backoff)
+					if backoff*2 <= maxBackOff {
+						backoff *= 2
+					} else if backoff < maxBackOff {
+						backoff += time.Second
+					}
+					if !gtw.downlinkSubscribed {
+						return
+					}
+					downChan, errChan, err = gtw.client.Subscribe()
+					if err != nil {
+						log.Errorf("backend/thethingsnetwork: could not re-subscribe to downlink: %s", err)
+					} else {
+						log.Info("backend/thethingsnetwork: re-subscribed to downlink")
+					}
 				}
 			case in := <-downChan:
 				if in == nil {
