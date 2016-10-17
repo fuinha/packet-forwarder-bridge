@@ -24,7 +24,14 @@ func init() {
 	api.SetLogger(logger{})
 }
 
+type gtwConf struct {
+	id    string
+	token string
+}
+
 type gtw struct {
+	id                 string
+	token              string
 	client             pb_router.GatewayClient
 	downlinkSubscribed bool
 	rxRate             metrics.EWMA
@@ -34,10 +41,10 @@ const maxBackOff = 5 * time.Minute
 
 // Backend implements the TTN backend
 type Backend struct {
-	token         string
 	client        *pb_router.Client
 	rxRateLimit   float64
 	txPacketChan  chan gw.TXPacketBytes
+	gatewayConf   map[lorawan.EUI64]*gtwConf
 	gateways      map[lorawan.EUI64]*gtw
 	gatewayStatus *pb_gateway.Status
 	mutex         sync.RWMutex
@@ -56,9 +63,15 @@ func (b *Backend) newGtw(mac lorawan.EUI64) *gtw {
 	defer b.mutex.Unlock()
 	b.mutex.Lock()
 	if _, ok := b.gateways[mac]; !ok {
+		gatewayID := fmt.Sprintf("eui-%s", mac)
+		gatewayToken := "token"
+		if conf, ok := b.gatewayConf[mac]; ok {
+			gatewayID = conf.id
+			gatewayToken = conf.token
+		}
 		b.gateways[mac] = &gtw{
-			client: b.client.ForGateway(fmt.Sprintf("eui-%s", mac), func() string {
-				return "token"
+			client: b.client.ForGateway(gatewayID, func() string {
+				return gatewayToken
 			}),
 			rxRate: metrics.NewEWMA1(),
 		}
@@ -67,10 +80,10 @@ func (b *Backend) newGtw(mac lorawan.EUI64) *gtw {
 }
 
 // NewBackend creates a new Backend.
-func NewBackend(discovery, router, token string) (*Backend, error) {
+func NewBackend(discovery, router string) (*Backend, error) {
 	b := Backend{
-		token:         token,
 		txPacketChan:  make(chan gw.TXPacketBytes),
+		gatewayConf:   make(map[lorawan.EUI64]*gtwConf),
 		gateways:      make(map[lorawan.EUI64]*gtw),
 		gatewayStatus: new(pb_gateway.Status),
 	}
@@ -116,6 +129,19 @@ func NewBackend(discovery, router, token string) (*Backend, error) {
 // SetRxRateLimit limits the rate at which gateways can send Rx (per minute).
 func (b *Backend) SetRxRateLimit(limit float64) {
 	b.rxRateLimit = limit
+}
+
+// AddGateway adds the configuration of a gateway
+func (b *Backend) AddGateway(euiStr, id, token string) error {
+	var eui lorawan.EUI64
+	if err := eui.UnmarshalText([]byte(euiStr)); err != nil {
+		return err
+	}
+	b.gatewayConf[eui] = &gtwConf{
+		id:    id,
+		token: token,
+	}
+	return nil
 }
 
 // InjectRegion injects a region string into each gateway status

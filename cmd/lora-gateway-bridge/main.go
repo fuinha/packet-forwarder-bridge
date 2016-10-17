@@ -27,13 +27,22 @@ func run(c *cli.Context) error {
 	ttn, err := thethingsnetwork.NewBackend(
 		c.String("ttn-discovery-server"),
 		c.String("ttn-router"),
-		c.String("ttn-access-token"),
 	)
 	if err != nil {
 		log.Fatalf("could not setup ttn backend: %s", err)
 	}
 	defer ttn.Close()
 	ttn.SetRxRateLimit(10)
+
+	if c.String("ttn-gateway-id") != "" {
+		if err := ttn.AddGateway(
+			c.String("ttn-gateway-eui"),
+			c.String("ttn-gateway-id"),
+			c.String("ttn-gateway-token"),
+		); err != nil {
+			log.Errorf("could not add gateway: %s", err)
+		}
+	}
 
 	if region := c.String("ttn-inject-region"); region != "" {
 		ttn.InjectRegion(region)
@@ -115,10 +124,22 @@ func main() {
 			EnvVar: "TTN_ROUTER",
 		},
 		cli.StringFlag{
-			Name:   "ttn-access-token",
-			Usage:  "TTN Access Token",
-			Value:  "token",
-			EnvVar: "TTN_ACCESS_TOKEN",
+			Name:   "ttn-gateway-eui",
+			Usage:  "TTN Gateway EUI",
+			Value:  "",
+			EnvVar: "TTN_GATEWAY_EUI",
+		},
+		cli.StringFlag{
+			Name:   "ttn-gateway-id",
+			Usage:  "TTN Gateway ID",
+			Value:  "",
+			EnvVar: "TTN_GATEWAY_ID",
+		},
+		cli.StringFlag{
+			Name:   "ttn-gateway-token",
+			Usage:  "TTN Gateway Token",
+			Value:  "",
+			EnvVar: "TTN_GATEWAY_TOKEN",
 		},
 		cli.StringFlag{
 			Name:   "ttn-inject-region",

@@ -37,7 +37,7 @@ func TestBackend(t *testing.T) {
 		go s.Serve(lis)
 
 		Convey("Given a New Backend", func() {
-			backend, err := NewBackend("", fmt.Sprintf("localhost:%d", port), "super-secure-token")
+			backend, err := NewBackend("", fmt.Sprintf("localhost:%d", port))
 			So(err, ShouldBeNil)
 			defer backend.Close()
 
