@@ -91,7 +91,7 @@ func run(c *cli.Context) error {
 func main() {
 	app := cli.NewApp()
 	app.Name = "lora-gateway-bridge"
-	app.Usage = "abstracts the packet_forwarder protocol into JSON over MQTT"
+	app.Usage = "abstracts the packet_forwarder protocol into protocol buffers over gRPC"
 	app.Copyright = "See http://github.com/brocaar/lora-gateway-bridge for copyright information"
 	app.Version = version
 	app.Action = run
@@ -105,7 +105,7 @@ func main() {
 		cli.StringFlag{
 			Name:   "ttn-discovery-server",
 			Usage:  "TTN Discovery Server",
-			Value:  "discover.thethingsnetwork.org:1900",
+			Value:  "localhost:1900",
 			EnvVar: "TTN_DISCOVERY_SERVER",
 		},
 		cli.StringFlag{
