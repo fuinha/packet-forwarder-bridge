@@ -10,10 +10,9 @@
 		},
 		{
 			"checksumSHA1": "9NR0rrcAT5J76C5xMS4AVksS9o0=",
-			"origin": "github.com/TheThingsNetwork/ttn/vendor/github.com/StackExchange/wmi",
 			"path": "github.com/StackExchange/wmi",
-			"revision": "ef4ecae4906fd5fffaf46ea906bb94d06b043323",
-			"revisionTime": "2016-10-17T08:39:29Z"
+			"revision": "e54cbda6595d7293a7a468ccf9525f6bc8887f99",
+			"revisionTime": "2016-08-11T21:45:55Z"
 		},
 		{
 			"checksumSHA1": "YEXfb22ysq9hvoWcK1lQRYYE0vk=",
@@ -71,10 +70,9 @@
 		},
 		{
 			"checksumSHA1": "rVZEfQyYQxiivnzH6ZWzcqrbi6o=",
-			"origin": "github.com/TheThingsNetwork/ttn/vendor/github.com/bluele/gcache",
 			"path": "github.com/bluele/gcache",
-			"revision": "ef4ecae4906fd5fffaf46ea906bb94d06b043323",
-			"revisionTime": "2016-10-17T08:39:29Z"
+			"revision": "69623c269a10cc02d8f770133ca36357c0877d81",
+			"revisionTime": "2016-07-16T13:40:25Z"
 		},
 		{
 			"checksumSHA1": "rHBPrqOaYAGyF0JupgYmj4643+k=",
@@ -114,45 +112,39 @@
 		},
 		{
 			"checksumSHA1": "wDZdTaY9JiqqqnF4c3pHP71nWmk=",
-			"origin": "github.com/TheThingsNetwork/ttn/vendor/github.com/go-ole/go-ole",
 			"path": "github.com/go-ole/go-ole",
-			"revision": "ef4ecae4906fd5fffaf46ea906bb94d06b043323",
-			"revisionTime": "2016-10-17T08:39:29Z"
+			"revision": "7dfdcf409020452e29b4babcbb22f984d2aa308a",
+			"revisionTime": "2016-07-29T03:38:29Z"
 		},
 		{
 			"checksumSHA1": "qLYVTQDhgrVIeZ2KI9eZV51mmug=",
-			"origin": "github.com/TheThingsNetwork/ttn/vendor/github.com/go-ole/go-ole/oleutil",
 			"path": "github.com/go-ole/go-ole/oleutil",
-			"revision": "ef4ecae4906fd5fffaf46ea906bb94d06b043323",
-			"revisionTime": "2016-10-17T08:39:29Z"
+			"revision": "7dfdcf409020452e29b4babcbb22f984d2aa308a",
+			"revisionTime": "2016-07-29T03:38:29Z"
 		},
 		{
 			"checksumSHA1": "aXC93Lo0MY4HRMSF7ANJ97VtulM=",
-			"origin": "github.com/TheThingsNetwork/ttn/vendor/github.com/gogo/protobuf/gogoproto",
 			"path": "github.com/gogo/protobuf/gogoproto",
-			"revision": "ef4ecae4906fd5fffaf46ea906bb94d06b043323",
-			"revisionTime": "2016-10-17T08:39:29Z"
+			"revision": "99cb9b23110011cc45571c901ecae6f6f5e65cd3",
+			"revisionTime": "2016-10-05T20:17:23Z"
 		},
 		{
 			"checksumSHA1": "2eIRbxeMUEF1ZnOanJhXmFR7pFs=",
-			"origin": "github.com/TheThingsNetwork/ttn/vendor/github.com/gogo/protobuf/proto",
 			"path": "github.com/gogo/protobuf/proto",
-			"revision": "ef4ecae4906fd5fffaf46ea906bb94d06b043323",
-			"revisionTime": "2016-10-17T08:39:29Z"
+			"revision": "99cb9b23110011cc45571c901ecae6f6f5e65cd3",
+			"revisionTime": "2016-10-05T20:17:23Z"
 		},
 		{
 			"checksumSHA1": "zVCBnBzjkmL1Gkll/7IbpKKprmw=",
-			"origin": "github.com/TheThingsNetwork/ttn/vendor/github.com/gogo/protobuf/protoc-gen-gogo/descriptor",
 			"path": "github.com/gogo/protobuf/protoc-gen-gogo/descriptor",
-			"revision": "ef4ecae4906fd5fffaf46ea906bb94d06b043323",
-			"revisionTime": "2016-10-17T08:39:29Z"
+			"revision": "99cb9b23110011cc45571c901ecae6f6f5e65cd3",
+			"revisionTime": "2016-10-05T20:17:23Z"
 		},
 		{
 			"checksumSHA1": "JSHl8b3nI8EWvzm+uyrIqj2Hiu4=",
-			"origin": "github.com/TheThingsNetwork/ttn/vendor/github.com/golang/mock/gomock",
 			"path": "github.com/golang/mock/gomock",
-			"revision": "ef4ecae4906fd5fffaf46ea906bb94d06b043323",
-			"revisionTime": "2016-10-17T08:39:29Z"
+			"revision": "bd3c8e81be01eef76d4b503f5e687d2d1354d2d9",
+			"revisionTime": "2016-01-21T18:51:14Z"
 		},
 		{
 			"checksumSHA1": "qjr2SKQanbmna221z0Ce2n0hnDE=",
@@ -192,10 +184,9 @@
 		},
 		{
 			"checksumSHA1": "ynJSWoF6v+3zMnh9R0QmmG6iGV8=",
-			"origin": "github.com/TheThingsNetwork/ttn/vendor/github.com/pkg/errors",
 			"path": "github.com/pkg/errors",
-			"revision": "ef4ecae4906fd5fffaf46ea906bb94d06b043323",
-			"revisionTime": "2016-10-17T08:39:29Z"
+			"revision": "839d9e913e063e28dfd0e6c7b7512793e0a48be9",
+			"revisionTime": "2016-10-02T05:25:12Z"
 		},
 		{
 			"checksumSHA1": "GiX6yRUzizn1C+ckgj1xLFLoz8g=",
@@ -205,59 +196,51 @@
 		},
 		{
 			"checksumSHA1": "ys3WakqgBbJBZBQ7FCbxW26eSAw=",
-			"origin": "github.com/TheThingsNetwork/ttn/vendor/github.com/shirou/gopsutil/cpu",
 			"path": "github.com/shirou/gopsutil/cpu",
-			"revision": "ef4ecae4906fd5fffaf46ea906bb94d06b043323",
-			"revisionTime": "2016-10-17T08:39:29Z"
+			"revision": "14eb7acb2355d760c7cc114df03042b3cb630d67",
+			"revisionTime": "2016-09-30T12:56:23Z"
 		},
 		{
 			"checksumSHA1": "NuQpBEPzjTLUqDW2zxChEBpDAkk=",
-			"origin": "github.com/TheThingsNetwork/ttn/vendor/github.com/shirou/gopsutil/host",
 			"path": "github.com/shirou/gopsutil/host",
-			"revision": "ef4ecae4906fd5fffaf46ea906bb94d06b043323",
-			"revisionTime": "2016-10-17T08:39:29Z"
+			"revision": "14eb7acb2355d760c7cc114df03042b3cb630d67",
+			"revisionTime": "2016-09-30T12:56:23Z"
 		},
 		{
 			"checksumSHA1": "UnT7JW8ZDcUVJUYOPBfW6SToB0k=",
-			"origin": "github.com/TheThingsNetwork/ttn/vendor/github.com/shirou/gopsutil/internal/common",
 			"path": "github.com/shirou/gopsutil/internal/common",
-			"revision": "ef4ecae4906fd5fffaf46ea906bb94d06b043323",
-			"revisionTime": "2016-10-17T08:39:29Z"
+			"revision": "14eb7acb2355d760c7cc114df03042b3cb630d67",
+			"revisionTime": "2016-09-30T12:56:23Z"
 		},
 		{
 			"checksumSHA1": "4I3yYYZEctqf3foI2+CI92lu5pM=",
-			"origin": "github.com/TheThingsNetwork/ttn/vendor/github.com/shirou/gopsutil/load",
 			"path": "github.com/shirou/gopsutil/load",
-			"revision": "ef4ecae4906fd5fffaf46ea906bb94d06b043323",
-			"revisionTime": "2016-10-17T08:39:29Z"
+			"revision": "14eb7acb2355d760c7cc114df03042b3cb630d67",
+			"revisionTime": "2016-09-30T12:56:23Z"
 		},
 		{
 			"checksumSHA1": "5HYtuEgPkRvE6I8VFQMAN0rbYRU=",
-			"origin": "github.com/TheThingsNetwork/ttn/vendor/github.com/shirou/gopsutil/mem",
 			"path": "github.com/shirou/gopsutil/mem",
-			"revision": "ef4ecae4906fd5fffaf46ea906bb94d06b043323",
-			"revisionTime": "2016-10-17T08:39:29Z"
+			"revision": "14eb7acb2355d760c7cc114df03042b3cb630d67",
+			"revisionTime": "2016-09-30T12:56:23Z"
 		},
 		{
 			"checksumSHA1": "Fa7lUUadHW9402ifjheuSFDkufo=",
-			"origin": "github.com/TheThingsNetwork/ttn/vendor/github.com/shirou/gopsutil/net",
 			"path": "github.com/shirou/gopsutil/net",
-			"revision": "ef4ecae4906fd5fffaf46ea906bb94d06b043323",
-			"revisionTime": "2016-10-17T08:39:29Z"
+			"revision": "14eb7acb2355d760c7cc114df03042b3cb630d67",
+			"revisionTime": "2016-09-30T12:56:23Z"
 		},
 		{
 			"checksumSHA1": "k1ug9JDvES8wNqxaQcO7qxgpOKc=",
-			"origin": "github.com/TheThingsNetwork/ttn/vendor/github.com/shirou/gopsutil/process",
 			"path": "github.com/shirou/gopsutil/process",
-			"revision": "ef4ecae4906fd5fffaf46ea906bb94d06b043323",
-			"revisionTime": "2016-10-17T08:39:29Z"
+			"revision": "14eb7acb2355d760c7cc114df03042b3cb630d67",
+			"revisionTime": "2016-09-30T12:56:23Z"
 		},
 		{
 			"checksumSHA1": "Nve7SpDmjsv6+rhkXAkfg/UQx94=",
-			"origin": "github.com/TheThingsNetwork/ttn/vendor/github.com/shirou/w32",
 			"path": "github.com/shirou/w32",
-			"revision": "ef4ecae4906fd5fffaf46ea906bb94d06b043323",
-			"revisionTime": "2016-10-17T08:39:29Z"
+			"revision": "bb4de0191aa41b5507caa14b0650cdbddcd9280b",
+			"revisionTime": "2016-09-30T03:27:40Z"
 		},
 		{
 			"checksumSHA1": "6AYg4fjEvFuAVN3wHakGApjhZAM=",
