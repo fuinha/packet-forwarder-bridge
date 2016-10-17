@@ -13,6 +13,7 @@ import (
 	pb_lorawan "github.com/TheThingsNetwork/ttn/api/protocol/lorawan"
 	pb_router "github.com/TheThingsNetwork/ttn/api/router"
 	"github.com/TheThingsNetwork/ttn/core/types"
+	"github.com/TheThingsNetwork/ttn/utils/errors"
 	"github.com/brocaar/loraserver/api/gw"
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/band"
@@ -180,6 +181,12 @@ func (b *Backend) SubscribeGatewayTX(mac lorawan.EUI64) error {
 				}
 				log.Errorf("backend/thethingsnetwork: error in downlink stream: %s", err)
 				gtw.client.Unsubscribe()
+
+				switch errors.GetErrType(err) {
+				case errors.InvalidArgument, errors.PermissionDenied:
+					return
+				}
+
 				for err != nil {
 					log.WithField("backoff", backoff).Debug("Backing off")
 					time.Sleep(backoff)
