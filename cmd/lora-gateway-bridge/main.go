@@ -10,6 +10,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/brocaar/lora-gateway-bridge/backend/thethingsnetwork"
 	"github.com/brocaar/lora-gateway-bridge/gateway"
+	"github.com/brocaar/loraserver/api/gw"
 	"github.com/brocaar/lorawan"
 	"github.com/codegangsta/cli"
 )
@@ -60,31 +61,35 @@ func run(c *cli.Context) error {
 		return ttn.UnSubscribeGatewayTX(mac)
 	}
 
-	gw, err := gateway.NewBackend(c.String("udp-bind"), onNew, onDelete)
+	gwBackend, err := gateway.NewBackend(c.String("udp-bind"), onNew, onDelete)
 	if err != nil {
 		log.Fatalf("could not setup gateway backend: %s", err)
 	}
-	defer gw.Close()
+	defer gwBackend.Close()
 
 	go func() {
-		for rxPacket := range gw.RXPacketChan() {
-			if err := ttn.PublishGatewayRX(rxPacket.RXInfo.MAC, rxPacket); err != nil {
-				log.Errorf("could not publish RXPacket: %s", err)
-			}
+		for rxPacket := range gwBackend.RXPacketChan() {
+			go func(rxPacket gw.RXPacketBytes) {
+				if err := ttn.PublishGatewayRX(rxPacket.RXInfo.MAC, rxPacket); err != nil {
+					log.Errorf("could not publish RXPacket: %s", err)
+				}
+			}(rxPacket)
 		}
 	}()
 
 	go func() {
-		for stats := range gw.StatsChan() {
-			if err := ttn.PublishGatewayStats(stats.MAC, stats); err != nil {
-				log.Errorf("could not publish GatewayStatsPacket: %s", err)
-			}
+		for stats := range gwBackend.StatsChan() {
+			go func(stats gw.GatewayStatsPacket) {
+				if err := ttn.PublishGatewayStats(stats.MAC, stats); err != nil {
+					log.Errorf("could not publish GatewayStatsPacket: %s", err)
+				}
+			}(stats)
 		}
 	}()
 
 	go func() {
 		for txPacket := range ttn.TXPacketChan() {
-			if err := gw.Send(txPacket); err != nil {
+			if err := gwBackend.Send(txPacket); err != nil {
 				log.Errorf("could not send TXPacket: %s", err)
 			}
 		}
