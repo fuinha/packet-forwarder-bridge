@@ -13,15 +13,15 @@ import (
 	pb_lorawan "github.com/TheThingsNetwork/ttn/api/protocol/lorawan"
 	pb_router "github.com/TheThingsNetwork/ttn/api/router"
 	"github.com/TheThingsNetwork/ttn/core/types"
-	"github.com/TheThingsNetwork/ttn/utils/errors"
 	"github.com/brocaar/loraserver/api/gw"
 	"github.com/brocaar/lorawan"
 	"github.com/brocaar/lorawan/band"
 	metrics "github.com/rcrowley/go-metrics"
+	"google.golang.org/grpc"
 )
 
 func init() {
-	api.SetLogger(logger{})
+	api.SetLogger(WrapLogrus())
 }
 
 type gtwConf struct {
@@ -30,18 +30,34 @@ type gtwConf struct {
 }
 
 type gtw struct {
-	id                 string
-	token              string
-	client             pb_router.GatewayClient
-	downlinkSubscribed bool
-	rxRate             metrics.EWMA
+	id       string
+	token    string
+	client   pb_router.RouterClientForGateway
+	uplink   pb_router.UplinkStream
+	status   pb_router.GatewayStatusStream
+	downlink pb_router.DownlinkStream
+	rxRate   metrics.EWMA
+}
+
+func (g *gtw) Close() {
+	if g.uplink != nil {
+		g.uplink.Close()
+	}
+	if g.downlink != nil {
+		g.downlink.Close()
+	}
+	if g.status != nil {
+		g.status.Close()
+	}
+	g.client.Close()
 }
 
 const maxBackOff = 5 * time.Minute
 
 // Backend implements the TTN backend
 type Backend struct {
-	client        *pb_router.Client
+	routerConn    *grpc.ClientConn
+	routerClient  pb_router.RouterClient
 	rxRateLimit   float64
 	txPacketChan  chan gw.TXPacketBytes
 	gatewayConf   map[lorawan.EUI64]*gtwConf
@@ -69,19 +85,20 @@ func (b *Backend) newGtw(mac lorawan.EUI64) *gtw {
 			gatewayID = conf.id
 			gatewayToken = conf.token
 		}
-		b.gateways[mac] = &gtw{
-			client: b.client.ForGateway(gatewayID, func() string {
-				return gatewayToken
-			}),
+		gateway := &gtw{
+			client: pb_router.NewRouterClientForGateway(b.routerClient, gatewayID, gatewayToken),
 			rxRate: metrics.NewEWMA1(),
 		}
+		gateway.uplink = pb_router.NewMonitoredUplinkStream(gateway.client)
+		gateway.status = pb_router.NewMonitoredGatewayStatusStream(gateway.client)
+		b.gateways[mac] = gateway
 	}
 	return b.gateways[mac]
 }
 
 // NewBackend creates a new Backend.
-func NewBackend(discovery, router string) (*Backend, error) {
-	b := Backend{
+func NewBackend(discovery, router string) (b *Backend, err error) {
+	b = &Backend{
 		txPacketChan:  make(chan gw.TXPacketBytes),
 		gatewayConf:   make(map[lorawan.EUI64]*gtwConf),
 		gateways:      make(map[lorawan.EUI64]*gtw),
@@ -92,6 +109,7 @@ func NewBackend(discovery, router string) (*Backend, error) {
 	if discovery == "" {
 		announcement.NetAddress = router
 	} else {
+		log.Info("backend/thethingsnetwork: connecting to discovery server...")
 		discovery, err := pb_discovery.NewClient(discovery, &pb_discovery.Announcement{
 			ServiceName: "lora-gateway-bridge",
 			Id:          getID(),
@@ -101,6 +119,7 @@ func NewBackend(discovery, router string) (*Backend, error) {
 		}
 		defer discovery.Close()
 
+		log.Info("backend/thethingsnetwork: getting router from discovery server")
 		router, err := discovery.Get("router", router)
 		if err != nil {
 			return nil, err
@@ -109,11 +128,14 @@ func NewBackend(discovery, router string) (*Backend, error) {
 		announcement = *router
 	}
 
-	routerClient, err := pb_router.NewClient(&announcement)
+	log.Info("backend/thethingsnetwork: connecting to router...")
+	b.routerConn, err = announcement.Dial()
 	if err != nil {
 		return nil, err
 	}
-	b.client = routerClient
+	b.routerClient = pb_router.NewRouterClient(b.routerConn)
+
+	log.Info("backend/thethingsnetwork: connected to router")
 
 	// Tick gateway rates
 	go func() {
@@ -123,7 +145,7 @@ func NewBackend(discovery, router string) (*Backend, error) {
 		}
 	}()
 
-	return &b, nil
+	return b, nil
 }
 
 // SetRxRateLimit limits the rate at which gateways can send Rx (per minute).
@@ -167,9 +189,9 @@ func (b *Backend) Close() {
 	defer b.mutex.Unlock()
 	b.mutex.Lock()
 	for _, gtw := range b.gateways {
-		gtw.client.Close()
+		gtw.Close()
 	}
-	b.client.Close()
+	b.routerConn.Close()
 }
 
 // TXPacketChan returns the TXPacketBytes channel.
@@ -187,87 +209,42 @@ func (b *Backend) SubscribeGatewayTX(mac lorawan.EUI64) error {
 		gtw = b.newGtw(mac)
 	}
 
-	downChan, errChan, err := gtw.client.Subscribe()
-	if err != nil {
-		return err
-	}
-	gtw.downlinkSubscribed = true
+	gtw.downlink = pb_router.NewMonitoredDownlinkStream(gtw.client)
 
 	go func() {
-		defer func() {
-			log.Debug("Stopping subscribe loop")
-		}()
-		log.Debug("Starting subscribe loop")
-		backoff := time.Second
-		for {
-			select {
-			case err := <-errChan:
-				if err == nil {
-					return
-				}
-				log.Errorf("backend/thethingsnetwork: error in downlink stream: %s", err)
-				gtw.client.Unsubscribe()
-
-				switch errors.GetErrType(err) {
-				case errors.InvalidArgument, errors.PermissionDenied:
-					return
-				}
-
-				for err != nil {
-					log.WithField("backoff", backoff).Debug("Backing off")
-					time.Sleep(backoff)
-					if backoff*2 <= maxBackOff {
-						backoff *= 2
-					} else if backoff < maxBackOff {
-						backoff += time.Second
-					}
-					if !gtw.downlinkSubscribed {
-						return
-					}
-					downChan, errChan, err = gtw.client.Subscribe()
-					if err != nil {
-						log.Errorf("backend/thethingsnetwork: could not re-subscribe to downlink: %s", err)
-					} else {
-						log.Info("backend/thethingsnetwork: re-subscribed to downlink")
-					}
-				}
-			case in := <-downChan:
-				if in == nil {
-					continue
-				}
-				log.Info("backend/thethingsnetwork: message received")
-				lora := in.ProtocolConfiguration.GetLorawan()
-				if lora == nil {
-					log.Error("backend/thethingsnetwork: received non-Lora message")
-					continue
-				}
-
-				var dataRate band.DataRate
-
-				if lora.Modulation == pb_lorawan.Modulation_LORA {
-					dr, _ := types.ParseDataRate(lora.DataRate)
-					dataRate.Modulation = band.LoRaModulation
-					dataRate.SpreadFactor = int(dr.SpreadingFactor)
-					dataRate.Bandwidth = int(dr.Bandwidth)
-				}
-
-				if lora.Modulation == pb_lorawan.Modulation_FSK {
-					dataRate.Modulation = band.FSKModulation
-					dataRate.BitRate = int(lora.BitRate)
-				}
-
-				var txPacket gw.TXPacketBytes
-				txPacket.TXInfo = gw.TXInfo{
-					MAC:       mac,
-					Timestamp: in.GatewayConfiguration.Timestamp,
-					Frequency: int(in.GatewayConfiguration.Frequency),
-					Power:     int(in.GatewayConfiguration.Power),
-					DataRate:  dataRate,
-					CodeRate:  lora.CodingRate,
-				}
-				txPacket.PHYPayload = in.Payload
-				b.txPacketChan <- txPacket
+		for in := range gtw.downlink.Channel() {
+			log.Info("backend/thethingsnetwork: message received")
+			lora := in.ProtocolConfiguration.GetLorawan()
+			if lora == nil {
+				log.Error("backend/thethingsnetwork: received non-Lora message")
+				continue
 			}
+
+			var dataRate band.DataRate
+
+			if lora.Modulation == pb_lorawan.Modulation_LORA {
+				dr, _ := types.ParseDataRate(lora.DataRate)
+				dataRate.Modulation = band.LoRaModulation
+				dataRate.SpreadFactor = int(dr.SpreadingFactor)
+				dataRate.Bandwidth = int(dr.Bandwidth)
+			}
+
+			if lora.Modulation == pb_lorawan.Modulation_FSK {
+				dataRate.Modulation = band.FSKModulation
+				dataRate.BitRate = int(lora.BitRate)
+			}
+
+			var txPacket gw.TXPacketBytes
+			txPacket.TXInfo = gw.TXInfo{
+				MAC:       mac,
+				Timestamp: in.GatewayConfiguration.Timestamp,
+				Frequency: int(in.GatewayConfiguration.Frequency),
+				Power:     int(in.GatewayConfiguration.Power),
+				DataRate:  dataRate,
+				CodeRate:  lora.CodingRate,
+			}
+			txPacket.PHYPayload = in.Payload
+			b.txPacketChan <- txPacket
 		}
 	}()
 
@@ -278,11 +255,11 @@ func (b *Backend) SubscribeGatewayTX(mac lorawan.EUI64) error {
 // topic.
 func (b *Backend) UnSubscribeGatewayTX(mac lorawan.EUI64) error {
 	gtw := b.getGtw(mac)
-	if gtw == nil {
+	if gtw == nil || gtw.downlink == nil {
 		return nil
 	}
-	gtw.downlinkSubscribed = false
-	return gtw.client.Unsubscribe()
+	gtw.downlink.Close()
+	return nil
 }
 
 func (b *Backend) convertRXPacket(rxPacket gw.RXPacketBytes) *pb_router.UplinkMessage {
@@ -330,7 +307,7 @@ func (b *Backend) PublishGatewayRX(mac lorawan.EUI64, rxPacket gw.RXPacketBytes)
 	if b.rxRateLimit > 0 && gtw.rxRate.Rate() > b.rxRateLimit {
 		return nil
 	}
-	return gtw.client.SendUplink(b.convertRXPacket(rxPacket))
+	return gtw.uplink.Send(b.convertRXPacket(rxPacket))
 }
 
 func (b *Backend) convertStatsPacket(stats gw.GatewayStatsPacket) *pb_gateway.Status {
@@ -377,5 +354,5 @@ func (b *Backend) PublishGatewayStats(mac lorawan.EUI64, stats gw.GatewayStatsPa
 	if gtw == nil {
 		gtw = b.newGtw(mac)
 	}
-	return gtw.client.SendGatewayStatus(b.convertStatsPacket(stats))
+	return gtw.status.Send(b.convertStatsPacket(stats))
 }

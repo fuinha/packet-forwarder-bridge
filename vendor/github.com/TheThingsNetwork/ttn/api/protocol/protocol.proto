@@ -3,9 +3,17 @@
 
 syntax = "proto3";
 
-import "github.com/TheThingsNetwork/ttn/api/protocol/lorawan/lorawan.proto";
+import "ttn/api/protocol/lorawan/lorawan.proto";
+
+option go_package = "github.com/TheThingsNetwork/ttn/api/protocol";
 
 package protocol;
+
+message Message {
+  oneof protocol {
+    lorawan.Message lorawan = 1;
+  }
+}
 
 message RxMetadata {
   oneof protocol {

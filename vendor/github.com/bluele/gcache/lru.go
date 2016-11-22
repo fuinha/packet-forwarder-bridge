@@ -16,10 +16,14 @@ func newLRUCache(cb *CacheBuilder) *LRUCache {
 	c := &LRUCache{}
 	buildCache(&c.baseCache, cb)
 
-	c.evictList = list.New()
-	c.items = make(map[interface{}]*list.Element, c.size+1)
+	c.init()
 	c.loadGroup.cache = c
 	return c
+}
+
+func (c *LRUCache) init() {
+	c.evictList = list.New()
+	c.items = make(map[interface{}]*list.Element, c.size+1)
 }
 
 func (c *LRUCache) set(key, value interface{}) (interface{}, error) {
@@ -82,7 +86,7 @@ func (c *LRUCache) GetIFPresent(key interface{}) (interface{}, error) {
 	return v, nil
 }
 
-func (c *LRUCache) get(key interface{}) (interface{}, error) {
+func (c *LRUCache) get(key interface{}, onLoad bool) (interface{}, error) {
 	c.mu.RLock()
 	item, ok := c.items[key]
 	c.mu.RUnlock()
@@ -93,17 +97,23 @@ func (c *LRUCache) get(key interface{}) (interface{}, error) {
 			c.mu.Lock()
 			defer c.mu.Unlock()
 			c.evictList.MoveToFront(item)
+			if !onLoad {
+				c.stats.IncrHitCount()
+			}
 			return it, nil
 		}
 		c.mu.Lock()
 		c.removeElement(item)
 		c.mu.Unlock()
 	}
+	if !onLoad {
+		c.stats.IncrMissCount()
+	}
 	return nil, KeyNotFoundError
 }
 
 func (c *LRUCache) getValue(key interface{}) (interface{}, error) {
-	it, err := c.get(key)
+	it, err := c.get(key, false)
 	if err != nil {
 		return nil, err
 	}
@@ -207,29 +217,7 @@ func (c *LRUCache) Purge() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.evictList = list.New()
-	c.items = make(map[interface{}]*list.Element, c.size)
-}
-
-// evict all expired entry
-func (c *LRUCache) gc() {
-	now := time.Now()
-	keys := []interface{}{}
-	c.mu.RLock()
-	for k, item := range c.items {
-		if item.Value.(*lruItem).IsExpired(&now) {
-			keys = append(keys, k)
-		}
-	}
-	c.mu.RUnlock()
-	if len(keys) == 0 {
-		return
-	}
-	c.mu.Lock()
-	for _, k := range keys {
-		c.remove(k)
-	}
-	c.mu.Unlock()
+	c.init()
 }
 
 type lruItem struct {

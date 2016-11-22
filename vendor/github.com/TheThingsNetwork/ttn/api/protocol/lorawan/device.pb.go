@@ -2,12 +2,22 @@
 // source: github.com/TheThingsNetwork/ttn/api/protocol/lorawan/device.proto
 // DO NOT EDIT!
 
+/*
+	Package lorawan is a generated protocol buffer package.
+
+	It is generated from these files:
+		github.com/TheThingsNetwork/ttn/api/protocol/lorawan/device.proto
+
+	It has these top-level messages:
+		DeviceIdentifier
+		Device
+*/
 package lorawan
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import google_protobuf1 "github.com/golang/protobuf/ptypes/empty"
+import google_protobuf "github.com/golang/protobuf/ptypes/empty"
 import _ "github.com/gogo/protobuf/gogoproto"
 
 import github_com_TheThingsNetwork_ttn_core_types "github.com/TheThingsNetwork/ttn/core/types"
@@ -24,8 +34,16 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the proto package it is being compiled against.
+// A compilation error at this line likely means your copy of the
+// proto package needs to be updated.
+const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
+
 type DeviceIdentifier struct {
+	// The AppEUI is a unique, 8 byte identifier for the application a device belongs to.
 	AppEui *github_com_TheThingsNetwork_ttn_core_types.AppEUI `protobuf:"bytes,1,opt,name=app_eui,json=appEui,proto3,customtype=github.com/TheThingsNetwork/ttn/core/types.AppEUI" json:"app_eui,omitempty"`
+	// The DevEUI is a unique, 8 byte identifier for the device.
 	DevEui *github_com_TheThingsNetwork_ttn_core_types.DevEUI `protobuf:"bytes,2,opt,name=dev_eui,json=devEui,proto3,customtype=github.com/TheThingsNetwork/ttn/core/types.DevEUI" json:"dev_eui,omitempty"`
 }
 
@@ -35,21 +53,36 @@ func (*DeviceIdentifier) ProtoMessage()               {}
 func (*DeviceIdentifier) Descriptor() ([]byte, []int) { return fileDescriptorDevice, []int{0} }
 
 type Device struct {
-	AppEui   *github_com_TheThingsNetwork_ttn_core_types.AppEUI  `protobuf:"bytes,1,opt,name=app_eui,json=appEui,proto3,customtype=github.com/TheThingsNetwork/ttn/core/types.AppEUI" json:"app_eui,omitempty"`
-	DevEui   *github_com_TheThingsNetwork_ttn_core_types.DevEUI  `protobuf:"bytes,2,opt,name=dev_eui,json=devEui,proto3,customtype=github.com/TheThingsNetwork/ttn/core/types.DevEUI" json:"dev_eui,omitempty"`
-	AppId    string                                              `protobuf:"bytes,3,opt,name=app_id,json=appId,proto3" json:"app_id,omitempty"`
-	DevId    string                                              `protobuf:"bytes,4,opt,name=dev_id,json=devId,proto3" json:"dev_id,omitempty"`
-	DevAddr  *github_com_TheThingsNetwork_ttn_core_types.DevAddr `protobuf:"bytes,5,opt,name=dev_addr,json=devAddr,proto3,customtype=github.com/TheThingsNetwork/ttn/core/types.DevAddr" json:"dev_addr,omitempty"`
-	NwkSKey  *github_com_TheThingsNetwork_ttn_core_types.NwkSKey `protobuf:"bytes,6,opt,name=nwk_s_key,json=nwkSKey,proto3,customtype=github.com/TheThingsNetwork/ttn/core/types.NwkSKey" json:"nwk_s_key,omitempty"`
-	AppSKey  *github_com_TheThingsNetwork_ttn_core_types.AppSKey `protobuf:"bytes,7,opt,name=app_s_key,json=appSKey,proto3,customtype=github.com/TheThingsNetwork/ttn/core/types.AppSKey" json:"app_s_key,omitempty"`
-	AppKey   *github_com_TheThingsNetwork_ttn_core_types.AppKey  `protobuf:"bytes,8,opt,name=app_key,json=appKey,proto3,customtype=github.com/TheThingsNetwork/ttn/core/types.AppKey" json:"app_key,omitempty"`
-	FCntUp   uint32                                              `protobuf:"varint,9,opt,name=f_cnt_up,json=fCntUp,proto3" json:"f_cnt_up,omitempty"`
-	FCntDown uint32                                              `protobuf:"varint,10,opt,name=f_cnt_down,json=fCntDown,proto3" json:"f_cnt_down,omitempty"`
-	// Options
-	DisableFCntCheck      bool   `protobuf:"varint,11,opt,name=disable_f_cnt_check,json=disableFCntCheck,proto3" json:"disable_f_cnt_check,omitempty"`
-	Uses32BitFCnt         bool   `protobuf:"varint,12,opt,name=uses32_bit_f_cnt,json=uses32BitFCnt,proto3" json:"uses32_bit_f_cnt,omitempty"`
+	// The AppEUI is a unique, 8 byte identifier for the application a device belongs to.
+	AppEui *github_com_TheThingsNetwork_ttn_core_types.AppEUI `protobuf:"bytes,1,opt,name=app_eui,json=appEui,proto3,customtype=github.com/TheThingsNetwork/ttn/core/types.AppEUI" json:"app_eui,omitempty"`
+	// The DevEUI is a unique, 8 byte identifier for the device.
+	DevEui *github_com_TheThingsNetwork_ttn_core_types.DevEUI `protobuf:"bytes,2,opt,name=dev_eui,json=devEui,proto3,customtype=github.com/TheThingsNetwork/ttn/core/types.DevEUI" json:"dev_eui,omitempty"`
+	// The AppID is a unique identifier for the application a device belongs to. It can contain lowercase letters, numbers, - and _.
+	AppId string `protobuf:"bytes,3,opt,name=app_id,json=appId,proto3" json:"app_id,omitempty"`
+	// The DevID is a unique identifier for the device. It can contain lowercase letters, numbers, - and _.
+	DevId string `protobuf:"bytes,4,opt,name=dev_id,json=devId,proto3" json:"dev_id,omitempty"`
+	// The DevAddr is a dynamic, 4 byte session address for the device.
+	DevAddr *github_com_TheThingsNetwork_ttn_core_types.DevAddr `protobuf:"bytes,5,opt,name=dev_addr,json=devAddr,proto3,customtype=github.com/TheThingsNetwork/ttn/core/types.DevAddr" json:"dev_addr,omitempty"`
+	// The NwkSKey is a 16 byte session key that is known by the device and the network. It is used for routing and MAC related functionality.
+	// This key is negotiated during the OTAA join procedure, or statically configured using ABP.
+	NwkSKey *github_com_TheThingsNetwork_ttn_core_types.NwkSKey `protobuf:"bytes,6,opt,name=nwk_s_key,json=nwkSKey,proto3,customtype=github.com/TheThingsNetwork/ttn/core/types.NwkSKey" json:"nwk_s_key,omitempty"`
+	// The AppSKey is a 16 byte session key that is known by the device and the application. It is used for payload encryption.
+	// This key is negotiated during the OTAA join procedure, or statically configured using ABP.
+	AppSKey *github_com_TheThingsNetwork_ttn_core_types.AppSKey `protobuf:"bytes,7,opt,name=app_s_key,json=appSKey,proto3,customtype=github.com/TheThingsNetwork/ttn/core/types.AppSKey" json:"app_s_key,omitempty"`
+	// The AppKey is a 16 byte static key that is known by the device and the application. It is used for negotiating session keys (OTAA).
+	AppKey *github_com_TheThingsNetwork_ttn_core_types.AppKey `protobuf:"bytes,8,opt,name=app_key,json=appKey,proto3,customtype=github.com/TheThingsNetwork/ttn/core/types.AppKey" json:"app_key,omitempty"`
+	// FCntUp is the uplink frame counter for a device session.
+	FCntUp uint32 `protobuf:"varint,9,opt,name=f_cnt_up,json=fCntUp,proto3" json:"f_cnt_up,omitempty"`
+	// FCntDown is the downlink frame counter for a device session.
+	FCntDown uint32 `protobuf:"varint,10,opt,name=f_cnt_down,json=fCntDown,proto3" json:"f_cnt_down,omitempty"`
+	// The DisableFCntCheck option disables the frame counter check. Disabling this makes the device vulnerable to replay attacks, but makes ABP slightly easier.
+	DisableFCntCheck bool `protobuf:"varint,11,opt,name=disable_f_cnt_check,json=disableFCntCheck,proto3" json:"disable_f_cnt_check,omitempty"`
+	// The Uses32BitFCnt option indicates that the device keeps track of full 32 bit frame counters. As only the 16 lsb are actually transmitted, the 16 msb will have to be inferred.
+	Uses32BitFCnt bool `protobuf:"varint,12,opt,name=uses32_bit_f_cnt,json=uses32BitFCnt,proto3" json:"uses32_bit_f_cnt,omitempty"`
+	// The ActivationContstraints are used to allocate a device address for a device.
+	// There are different prefixes for `otaa`, `abp`, `world`, `local`, `private`, `testing`.
 	ActivationConstraints string `protobuf:"bytes,13,opt,name=activation_constraints,json=activationConstraints,proto3" json:"activation_constraints,omitempty"`
-	// Other
+	// When the device was last seen (Unix nanoseconds)
 	LastSeen int64 `protobuf:"varint,21,opt,name=last_seen,json=lastSeen,proto3" json:"last_seen,omitempty"`
 }
 
@@ -69,14 +102,14 @@ var _ grpc.ClientConn
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion3
+const _ = grpc.SupportPackageIsVersion4
 
 // Client API for DeviceManager service
 
 type DeviceManagerClient interface {
 	GetDevice(ctx context.Context, in *DeviceIdentifier, opts ...grpc.CallOption) (*Device, error)
-	SetDevice(ctx context.Context, in *Device, opts ...grpc.CallOption) (*google_protobuf1.Empty, error)
-	DeleteDevice(ctx context.Context, in *DeviceIdentifier, opts ...grpc.CallOption) (*google_protobuf1.Empty, error)
+	SetDevice(ctx context.Context, in *Device, opts ...grpc.CallOption) (*google_protobuf.Empty, error)
+	DeleteDevice(ctx context.Context, in *DeviceIdentifier, opts ...grpc.CallOption) (*google_protobuf.Empty, error)
 }
 
 type deviceManagerClient struct {
@@ -96,8 +129,8 @@ func (c *deviceManagerClient) GetDevice(ctx context.Context, in *DeviceIdentifie
 	return out, nil
 }
 
-func (c *deviceManagerClient) SetDevice(ctx context.Context, in *Device, opts ...grpc.CallOption) (*google_protobuf1.Empty, error) {
-	out := new(google_protobuf1.Empty)
+func (c *deviceManagerClient) SetDevice(ctx context.Context, in *Device, opts ...grpc.CallOption) (*google_protobuf.Empty, error) {
+	out := new(google_protobuf.Empty)
 	err := grpc.Invoke(ctx, "/lorawan.DeviceManager/SetDevice", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
@@ -105,8 +138,8 @@ func (c *deviceManagerClient) SetDevice(ctx context.Context, in *Device, opts ..
 	return out, nil
 }
 
-func (c *deviceManagerClient) DeleteDevice(ctx context.Context, in *DeviceIdentifier, opts ...grpc.CallOption) (*google_protobuf1.Empty, error) {
-	out := new(google_protobuf1.Empty)
+func (c *deviceManagerClient) DeleteDevice(ctx context.Context, in *DeviceIdentifier, opts ...grpc.CallOption) (*google_protobuf.Empty, error) {
+	out := new(google_protobuf.Empty)
 	err := grpc.Invoke(ctx, "/lorawan.DeviceManager/DeleteDevice", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
@@ -118,8 +151,8 @@ func (c *deviceManagerClient) DeleteDevice(ctx context.Context, in *DeviceIdenti
 
 type DeviceManagerServer interface {
 	GetDevice(context.Context, *DeviceIdentifier) (*Device, error)
-	SetDevice(context.Context, *Device) (*google_protobuf1.Empty, error)
-	DeleteDevice(context.Context, *DeviceIdentifier) (*google_protobuf1.Empty, error)
+	SetDevice(context.Context, *Device) (*google_protobuf.Empty, error)
+	DeleteDevice(context.Context, *DeviceIdentifier) (*google_protobuf.Empty, error)
 }
 
 func RegisterDeviceManagerServer(s *grpc.Server, srv DeviceManagerServer) {
@@ -198,39 +231,39 @@ var _DeviceManager_serviceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: fileDescriptorDevice,
+	Metadata: "github.com/TheThingsNetwork/ttn/api/protocol/lorawan/device.proto",
 }
 
-func (m *DeviceIdentifier) Marshal() (data []byte, err error) {
+func (m *DeviceIdentifier) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
 	if err != nil {
 		return nil, err
 	}
-	return data[:n], nil
+	return dAtA[:n], nil
 }
 
-func (m *DeviceIdentifier) MarshalTo(data []byte) (int, error) {
+func (m *DeviceIdentifier) MarshalTo(dAtA []byte) (int, error) {
 	var i int
 	_ = i
 	var l int
 	_ = l
 	if m.AppEui != nil {
-		data[i] = 0xa
+		dAtA[i] = 0xa
 		i++
-		i = encodeVarintDevice(data, i, uint64(m.AppEui.Size()))
-		n1, err := m.AppEui.MarshalTo(data[i:])
+		i = encodeVarintDevice(dAtA, i, uint64(m.AppEui.Size()))
+		n1, err := m.AppEui.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
 		i += n1
 	}
 	if m.DevEui != nil {
-		data[i] = 0x12
+		dAtA[i] = 0x12
 		i++
-		i = encodeVarintDevice(data, i, uint64(m.DevEui.Size()))
-		n2, err := m.DevEui.MarshalTo(data[i:])
+		i = encodeVarintDevice(dAtA, i, uint64(m.DevEui.Size()))
+		n2, err := m.DevEui.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
@@ -239,164 +272,164 @@ func (m *DeviceIdentifier) MarshalTo(data []byte) (int, error) {
 	return i, nil
 }
 
-func (m *Device) Marshal() (data []byte, err error) {
+func (m *Device) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
 	if err != nil {
 		return nil, err
 	}
-	return data[:n], nil
+	return dAtA[:n], nil
 }
 
-func (m *Device) MarshalTo(data []byte) (int, error) {
+func (m *Device) MarshalTo(dAtA []byte) (int, error) {
 	var i int
 	_ = i
 	var l int
 	_ = l
 	if m.AppEui != nil {
-		data[i] = 0xa
+		dAtA[i] = 0xa
 		i++
-		i = encodeVarintDevice(data, i, uint64(m.AppEui.Size()))
-		n3, err := m.AppEui.MarshalTo(data[i:])
+		i = encodeVarintDevice(dAtA, i, uint64(m.AppEui.Size()))
+		n3, err := m.AppEui.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
 		i += n3
 	}
 	if m.DevEui != nil {
-		data[i] = 0x12
+		dAtA[i] = 0x12
 		i++
-		i = encodeVarintDevice(data, i, uint64(m.DevEui.Size()))
-		n4, err := m.DevEui.MarshalTo(data[i:])
+		i = encodeVarintDevice(dAtA, i, uint64(m.DevEui.Size()))
+		n4, err := m.DevEui.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
 		i += n4
 	}
 	if len(m.AppId) > 0 {
-		data[i] = 0x1a
+		dAtA[i] = 0x1a
 		i++
-		i = encodeVarintDevice(data, i, uint64(len(m.AppId)))
-		i += copy(data[i:], m.AppId)
+		i = encodeVarintDevice(dAtA, i, uint64(len(m.AppId)))
+		i += copy(dAtA[i:], m.AppId)
 	}
 	if len(m.DevId) > 0 {
-		data[i] = 0x22
+		dAtA[i] = 0x22
 		i++
-		i = encodeVarintDevice(data, i, uint64(len(m.DevId)))
-		i += copy(data[i:], m.DevId)
+		i = encodeVarintDevice(dAtA, i, uint64(len(m.DevId)))
+		i += copy(dAtA[i:], m.DevId)
 	}
 	if m.DevAddr != nil {
-		data[i] = 0x2a
+		dAtA[i] = 0x2a
 		i++
-		i = encodeVarintDevice(data, i, uint64(m.DevAddr.Size()))
-		n5, err := m.DevAddr.MarshalTo(data[i:])
+		i = encodeVarintDevice(dAtA, i, uint64(m.DevAddr.Size()))
+		n5, err := m.DevAddr.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
 		i += n5
 	}
 	if m.NwkSKey != nil {
-		data[i] = 0x32
+		dAtA[i] = 0x32
 		i++
-		i = encodeVarintDevice(data, i, uint64(m.NwkSKey.Size()))
-		n6, err := m.NwkSKey.MarshalTo(data[i:])
+		i = encodeVarintDevice(dAtA, i, uint64(m.NwkSKey.Size()))
+		n6, err := m.NwkSKey.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
 		i += n6
 	}
 	if m.AppSKey != nil {
-		data[i] = 0x3a
+		dAtA[i] = 0x3a
 		i++
-		i = encodeVarintDevice(data, i, uint64(m.AppSKey.Size()))
-		n7, err := m.AppSKey.MarshalTo(data[i:])
+		i = encodeVarintDevice(dAtA, i, uint64(m.AppSKey.Size()))
+		n7, err := m.AppSKey.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
 		i += n7
 	}
 	if m.AppKey != nil {
-		data[i] = 0x42
+		dAtA[i] = 0x42
 		i++
-		i = encodeVarintDevice(data, i, uint64(m.AppKey.Size()))
-		n8, err := m.AppKey.MarshalTo(data[i:])
+		i = encodeVarintDevice(dAtA, i, uint64(m.AppKey.Size()))
+		n8, err := m.AppKey.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
 		i += n8
 	}
 	if m.FCntUp != 0 {
-		data[i] = 0x48
+		dAtA[i] = 0x48
 		i++
-		i = encodeVarintDevice(data, i, uint64(m.FCntUp))
+		i = encodeVarintDevice(dAtA, i, uint64(m.FCntUp))
 	}
 	if m.FCntDown != 0 {
-		data[i] = 0x50
+		dAtA[i] = 0x50
 		i++
-		i = encodeVarintDevice(data, i, uint64(m.FCntDown))
+		i = encodeVarintDevice(dAtA, i, uint64(m.FCntDown))
 	}
 	if m.DisableFCntCheck {
-		data[i] = 0x58
+		dAtA[i] = 0x58
 		i++
 		if m.DisableFCntCheck {
-			data[i] = 1
+			dAtA[i] = 1
 		} else {
-			data[i] = 0
+			dAtA[i] = 0
 		}
 		i++
 	}
 	if m.Uses32BitFCnt {
-		data[i] = 0x60
+		dAtA[i] = 0x60
 		i++
 		if m.Uses32BitFCnt {
-			data[i] = 1
+			dAtA[i] = 1
 		} else {
-			data[i] = 0
+			dAtA[i] = 0
 		}
 		i++
 	}
 	if len(m.ActivationConstraints) > 0 {
-		data[i] = 0x6a
+		dAtA[i] = 0x6a
 		i++
-		i = encodeVarintDevice(data, i, uint64(len(m.ActivationConstraints)))
-		i += copy(data[i:], m.ActivationConstraints)
+		i = encodeVarintDevice(dAtA, i, uint64(len(m.ActivationConstraints)))
+		i += copy(dAtA[i:], m.ActivationConstraints)
 	}
 	if m.LastSeen != 0 {
-		data[i] = 0xa8
+		dAtA[i] = 0xa8
 		i++
-		data[i] = 0x1
+		dAtA[i] = 0x1
 		i++
-		i = encodeVarintDevice(data, i, uint64(m.LastSeen))
+		i = encodeVarintDevice(dAtA, i, uint64(m.LastSeen))
 	}
 	return i, nil
 }
 
-func encodeFixed64Device(data []byte, offset int, v uint64) int {
-	data[offset] = uint8(v)
-	data[offset+1] = uint8(v >> 8)
-	data[offset+2] = uint8(v >> 16)
-	data[offset+3] = uint8(v >> 24)
-	data[offset+4] = uint8(v >> 32)
-	data[offset+5] = uint8(v >> 40)
-	data[offset+6] = uint8(v >> 48)
-	data[offset+7] = uint8(v >> 56)
+func encodeFixed64Device(dAtA []byte, offset int, v uint64) int {
+	dAtA[offset] = uint8(v)
+	dAtA[offset+1] = uint8(v >> 8)
+	dAtA[offset+2] = uint8(v >> 16)
+	dAtA[offset+3] = uint8(v >> 24)
+	dAtA[offset+4] = uint8(v >> 32)
+	dAtA[offset+5] = uint8(v >> 40)
+	dAtA[offset+6] = uint8(v >> 48)
+	dAtA[offset+7] = uint8(v >> 56)
 	return offset + 8
 }
-func encodeFixed32Device(data []byte, offset int, v uint32) int {
-	data[offset] = uint8(v)
-	data[offset+1] = uint8(v >> 8)
-	data[offset+2] = uint8(v >> 16)
-	data[offset+3] = uint8(v >> 24)
+func encodeFixed32Device(dAtA []byte, offset int, v uint32) int {
+	dAtA[offset] = uint8(v)
+	dAtA[offset+1] = uint8(v >> 8)
+	dAtA[offset+2] = uint8(v >> 16)
+	dAtA[offset+3] = uint8(v >> 24)
 	return offset + 4
 }
-func encodeVarintDevice(data []byte, offset int, v uint64) int {
+func encodeVarintDevice(dAtA []byte, offset int, v uint64) int {
 	for v >= 1<<7 {
-		data[offset] = uint8(v&0x7f | 0x80)
+		dAtA[offset] = uint8(v&0x7f | 0x80)
 		v >>= 7
 		offset++
 	}
-	data[offset] = uint8(v)
+	dAtA[offset] = uint8(v)
 	return offset + 1
 }
 func (m *DeviceIdentifier) Size() (n int) {
@@ -483,8 +516,8 @@ func sovDevice(x uint64) (n int) {
 func sozDevice(x uint64) (n int) {
 	return sovDevice(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *DeviceIdentifier) Unmarshal(data []byte) error {
-	l := len(data)
+func (m *DeviceIdentifier) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		preIndex := iNdEx
@@ -496,7 +529,7 @@ func (m *DeviceIdentifier) Unmarshal(data []byte) error {
 			if iNdEx >= l {
 				return io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -524,7 +557,7 @@ func (m *DeviceIdentifier) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				byteLen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -540,7 +573,7 @@ func (m *DeviceIdentifier) Unmarshal(data []byte) error {
 			}
 			var v github_com_TheThingsNetwork_ttn_core_types.AppEUI
 			m.AppEui = &v
-			if err := m.AppEui.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.AppEui.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -556,7 +589,7 @@ func (m *DeviceIdentifier) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				byteLen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -572,13 +605,13 @@ func (m *DeviceIdentifier) Unmarshal(data []byte) error {
 			}
 			var v github_com_TheThingsNetwork_ttn_core_types.DevEUI
 			m.DevEui = &v
-			if err := m.DevEui.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.DevEui.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
-			skippy, err := skipDevice(data[iNdEx:])
+			skippy, err := skipDevice(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
@@ -597,8 +630,8 @@ func (m *DeviceIdentifier) Unmarshal(data []byte) error {
 	}
 	return nil
 }
-func (m *Device) Unmarshal(data []byte) error {
-	l := len(data)
+func (m *Device) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		preIndex := iNdEx
@@ -610,7 +643,7 @@ func (m *Device) Unmarshal(data []byte) error {
 			if iNdEx >= l {
 				return io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -638,7 +671,7 @@ func (m *Device) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				byteLen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -654,7 +687,7 @@ func (m *Device) Unmarshal(data []byte) error {
 			}
 			var v github_com_TheThingsNetwork_ttn_core_types.AppEUI
 			m.AppEui = &v
-			if err := m.AppEui.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.AppEui.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -670,7 +703,7 @@ func (m *Device) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				byteLen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -686,7 +719,7 @@ func (m *Device) Unmarshal(data []byte) error {
 			}
 			var v github_com_TheThingsNetwork_ttn_core_types.DevEUI
 			m.DevEui = &v
-			if err := m.DevEui.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.DevEui.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -702,7 +735,7 @@ func (m *Device) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				stringLen |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -717,7 +750,7 @@ func (m *Device) Unmarshal(data []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.AppId = string(data[iNdEx:postIndex])
+			m.AppId = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
@@ -731,7 +764,7 @@ func (m *Device) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				stringLen |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -746,7 +779,7 @@ func (m *Device) Unmarshal(data []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.DevId = string(data[iNdEx:postIndex])
+			m.DevId = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 5:
 			if wireType != 2 {
@@ -760,7 +793,7 @@ func (m *Device) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				byteLen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -776,7 +809,7 @@ func (m *Device) Unmarshal(data []byte) error {
 			}
 			var v github_com_TheThingsNetwork_ttn_core_types.DevAddr
 			m.DevAddr = &v
-			if err := m.DevAddr.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.DevAddr.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -792,7 +825,7 @@ func (m *Device) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				byteLen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -808,7 +841,7 @@ func (m *Device) Unmarshal(data []byte) error {
 			}
 			var v github_com_TheThingsNetwork_ttn_core_types.NwkSKey
 			m.NwkSKey = &v
-			if err := m.NwkSKey.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.NwkSKey.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -824,7 +857,7 @@ func (m *Device) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				byteLen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -840,7 +873,7 @@ func (m *Device) Unmarshal(data []byte) error {
 			}
 			var v github_com_TheThingsNetwork_ttn_core_types.AppSKey
 			m.AppSKey = &v
-			if err := m.AppSKey.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.AppSKey.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -856,7 +889,7 @@ func (m *Device) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				byteLen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -872,7 +905,7 @@ func (m *Device) Unmarshal(data []byte) error {
 			}
 			var v github_com_TheThingsNetwork_ttn_core_types.AppKey
 			m.AppKey = &v
-			if err := m.AppKey.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.AppKey.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -888,7 +921,7 @@ func (m *Device) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				m.FCntUp |= (uint32(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -907,7 +940,7 @@ func (m *Device) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				m.FCntDown |= (uint32(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -926,7 +959,7 @@ func (m *Device) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				v |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -946,7 +979,7 @@ func (m *Device) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				v |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -966,7 +999,7 @@ func (m *Device) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				stringLen |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -981,7 +1014,7 @@ func (m *Device) Unmarshal(data []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.ActivationConstraints = string(data[iNdEx:postIndex])
+			m.ActivationConstraints = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 21:
 			if wireType != 0 {
@@ -995,7 +1028,7 @@ func (m *Device) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				m.LastSeen |= (int64(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1004,7 +1037,7 @@ func (m *Device) Unmarshal(data []byte) error {
 			}
 		default:
 			iNdEx = preIndex
-			skippy, err := skipDevice(data[iNdEx:])
+			skippy, err := skipDevice(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
@@ -1023,8 +1056,8 @@ func (m *Device) Unmarshal(data []byte) error {
 	}
 	return nil
 }
-func skipDevice(data []byte) (n int, err error) {
-	l := len(data)
+func skipDevice(dAtA []byte) (n int, err error) {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		var wire uint64
@@ -1035,7 +1068,7 @@ func skipDevice(data []byte) (n int, err error) {
 			if iNdEx >= l {
 				return 0, io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -1053,7 +1086,7 @@ func skipDevice(data []byte) (n int, err error) {
 					return 0, io.ErrUnexpectedEOF
 				}
 				iNdEx++
-				if data[iNdEx-1] < 0x80 {
+				if dAtA[iNdEx-1] < 0x80 {
 					break
 				}
 			}
@@ -1070,7 +1103,7 @@ func skipDevice(data []byte) (n int, err error) {
 				if iNdEx >= l {
 					return 0, io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				length |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1093,7 +1126,7 @@ func skipDevice(data []byte) (n int, err error) {
 					if iNdEx >= l {
 						return 0, io.ErrUnexpectedEOF
 					}
-					b := data[iNdEx]
+					b := dAtA[iNdEx]
 					iNdEx++
 					innerWire |= (uint64(b) & 0x7F) << shift
 					if b < 0x80 {
@@ -1104,7 +1137,7 @@ func skipDevice(data []byte) (n int, err error) {
 				if innerWireType == 4 {
 					break
 				}
-				next, err := skipDevice(data[start:])
+				next, err := skipDevice(dAtA[start:])
 				if err != nil {
 					return 0, err
 				}
@@ -1133,42 +1166,42 @@ func init() {
 }
 
 var fileDescriptorDevice = []byte{
-	// 578 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xcc, 0x94, 0xc1, 0x6e, 0xd3, 0x30,
-	0x18, 0xc7, 0x09, 0x63, 0x6d, 0x63, 0x56, 0x51, 0x19, 0x6d, 0x32, 0x1d, 0xea, 0xaa, 0x5d, 0xe8,
-	0x65, 0x89, 0xd8, 0x18, 0x9c, 0xbb, 0xb6, 0xa0, 0x0a, 0x31, 0x89, 0x6c, 0x3b, 0x47, 0x6e, 0xfc,
-	0x35, 0xb5, 0x9a, 0xd9, 0x56, 0xe2, 0x24, 0xea, 0x03, 0xf0, 0x0e, 0x3c, 0x07, 0x6f, 0xc0, 0x8d,
-	0x23, 0xe7, 0x1d, 0x26, 0x34, 0x5e, 0x04, 0x39, 0xee, 0x18, 0xaa, 0x84, 0x26, 0x7a, 0xe2, 0xf6,
-	0xe5, 0xff, 0xff, 0xfb, 0xf7, 0xd9, 0x75, 0xfd, 0xa1, 0x7e, 0xcc, 0xf5, 0x2c, 0x9f, 0x78, 0x91,
-	0xbc, 0xf4, 0xcf, 0x67, 0x70, 0x3e, 0xe3, 0x22, 0xce, 0x4e, 0x41, 0x97, 0x32, 0x9d, 0xfb, 0x5a,
-	0x0b, 0x9f, 0x2a, 0xee, 0xab, 0x54, 0x6a, 0x19, 0xc9, 0xc4, 0x4f, 0x64, 0x4a, 0x4b, 0x2a, 0x7c,
-	0x06, 0x05, 0x8f, 0xc0, 0xab, 0x74, 0x5c, 0x5f, 0xaa, 0xed, 0xdd, 0x58, 0xca, 0x38, 0x01, 0x1b,
-	0x9f, 0xe4, 0x53, 0x1f, 0x2e, 0x95, 0x5e, 0xd8, 0x54, 0xfb, 0xe0, 0x8f, 0x46, 0xb1, 0x8c, 0xe5,
-	0x5d, 0xca, 0x7c, 0x55, 0x1f, 0x55, 0x65, 0xe3, 0xfb, 0x5f, 0x1c, 0xd4, 0x1a, 0x56, 0x5d, 0xc6,
-	0x0c, 0x84, 0xe6, 0x53, 0x0e, 0x29, 0x3e, 0x45, 0x75, 0xaa, 0x54, 0x08, 0x39, 0x27, 0x4e, 0xd7,
-	0xe9, 0x6d, 0x9d, 0x1c, 0x5f, 0x5d, 0xef, 0xbd, 0xbc, 0xef, 0x04, 0x91, 0x4c, 0xc1, 0xd7, 0x0b,
-	0x05, 0x99, 0xd7, 0x57, 0x6a, 0x74, 0x31, 0x0e, 0x6a, 0x54, 0xa9, 0x51, 0xce, 0x0d, 0x8f, 0x41,
-	0x51, 0xf1, 0x1e, 0xae, 0xc5, 0x1b, 0x42, 0x51, 0xf1, 0x18, 0x14, 0xa3, 0x9c, 0xef, 0x7f, 0xaa,
-	0xa1, 0x9a, 0xdd, 0xf4, 0xff, 0xbe, 0x55, 0xbc, 0x8d, 0x0c, 0x39, 0xe4, 0x8c, 0x6c, 0x74, 0x9d,
-	0x9e, 0x1b, 0x6c, 0x52, 0xa5, 0xc6, 0xcc, 0xc8, 0xa6, 0x0d, 0x67, 0xe4, 0x91, 0x95, 0x19, 0x14,
-	0x63, 0x86, 0x3f, 0xa2, 0x86, 0x91, 0x29, 0x63, 0x29, 0xd9, 0xac, 0xda, 0xbf, 0xbe, 0xba, 0xde,
-	0x3b, 0xfc, 0xb7, 0xf6, 0x7d, 0xc6, 0xd2, 0xc0, 0x9c, 0xc2, 0x14, 0x38, 0x40, 0xae, 0x28, 0xe7,
-	0x61, 0x16, 0xce, 0x61, 0x41, 0x6a, 0x6b, 0x31, 0x4f, 0xcb, 0xf9, 0xd9, 0x7b, 0x58, 0x04, 0x75,
-	0x61, 0x0b, 0xc3, 0x34, 0x87, 0xb2, 0xcc, 0xfa, 0x5a, 0xcc, 0xbe, 0x52, 0x96, 0x49, 0x6d, 0x71,
-	0x7b, 0x91, 0x86, 0xd8, 0x58, 0xf7, 0x22, 0x0d, 0xd0, 0xfc, 0xdc, 0x86, 0x47, 0x50, 0x63, 0x1a,
-	0x46, 0x42, 0x87, 0xb9, 0x22, 0x6e, 0xd7, 0xe9, 0x35, 0x83, 0xda, 0x74, 0x20, 0xf4, 0x85, 0xc2,
-	0xcf, 0x11, 0xb2, 0x0e, 0x93, 0xa5, 0x20, 0xa8, 0xf2, 0x1a, 0xc6, 0x1b, 0xca, 0x52, 0xe0, 0x03,
-	0xf4, 0x94, 0xf1, 0x8c, 0x4e, 0x12, 0x08, 0x6d, 0x2a, 0x9a, 0x41, 0x34, 0x27, 0x8f, 0xbb, 0x4e,
-	0xaf, 0x11, 0xb4, 0x96, 0xd6, 0xdb, 0x81, 0xd0, 0x03, 0xa3, 0xe3, 0x17, 0xa8, 0x95, 0x67, 0x90,
-	0x1d, 0x1d, 0x86, 0x13, 0xae, 0xed, 0x0a, 0xb2, 0x55, 0x65, 0x9b, 0x56, 0x3f, 0xe1, 0xda, 0xa4,
-	0xf1, 0x31, 0xda, 0xa1, 0x91, 0xe6, 0x05, 0xd5, 0x5c, 0x8a, 0x30, 0x92, 0x22, 0xd3, 0x29, 0xe5,
-	0x42, 0x67, 0xa4, 0x59, 0xfd, 0x03, 0xb6, 0xef, 0xdc, 0xc1, 0x9d, 0x89, 0x77, 0x91, 0x9b, 0xd0,
-	0x4c, 0x87, 0x19, 0x80, 0x20, 0xdb, 0x5d, 0xa7, 0xb7, 0x11, 0x34, 0x8c, 0x70, 0x06, 0x20, 0x0e,
-	0xbf, 0x3a, 0xa8, 0x69, 0xdf, 0xc1, 0x07, 0x2a, 0x68, 0x0c, 0x29, 0x7e, 0x83, 0xdc, 0x77, 0xa0,
-	0x97, 0x6f, 0xe3, 0x99, 0xb7, 0x9c, 0x18, 0xde, 0xea, 0x0b, 0x6f, 0x3f, 0x59, 0xb1, 0xf0, 0x2b,
-	0xe4, 0x9e, 0xfd, 0x5e, 0xb8, 0xea, 0xb6, 0x77, 0x3c, 0x3b, 0x72, 0xbc, 0xdb, 0x61, 0xe2, 0x8d,
-	0xcc, 0xc8, 0xc1, 0x7d, 0xb4, 0x35, 0x84, 0x04, 0x34, 0xdc, 0xdf, 0xf1, 0x2f, 0x88, 0x93, 0xd6,
-	0xb7, 0x9b, 0x8e, 0xf3, 0xfd, 0xa6, 0xe3, 0xfc, 0xb8, 0xe9, 0x38, 0x9f, 0x7f, 0x76, 0x1e, 0x4c,
-	0x6a, 0x55, 0xe2, 0xe8, 0x57, 0x00, 0x00, 0x00, 0xff, 0xff, 0x4d, 0x74, 0x98, 0x46, 0x33, 0x05,
-	0x00, 0x00,
+	// 586 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xcc, 0x94, 0xcf, 0x6e, 0x13, 0x3d,
+	0x14, 0xc5, 0xbf, 0xf9, 0x4a, 0x93, 0x8c, 0x69, 0x44, 0x65, 0xd4, 0xca, 0xa4, 0x28, 0x8d, 0xba,
+	0x21, 0x9b, 0xce, 0x88, 0xfe, 0x81, 0x75, 0x9a, 0xa4, 0x28, 0x42, 0x54, 0x62, 0xda, 0x6e, 0xd8,
+	0x8c, 0x9c, 0xf1, 0xcd, 0xc4, 0xca, 0xd4, 0xb6, 0x66, 0x3c, 0x33, 0xca, 0x03, 0xf0, 0x0e, 0x3c,
+	0x07, 0x6f, 0xc0, 0x8e, 0x25, 0xeb, 0x2e, 0x2a, 0x54, 0x5e, 0x04, 0x79, 0x9c, 0x52, 0x14, 0x09,
+	0x55, 0x64, 0xc5, 0xee, 0xce, 0x39, 0xc7, 0xbf, 0x6b, 0xc7, 0xf1, 0x45, 0xbd, 0x98, 0xeb, 0x69,
+	0x3e, 0xf6, 0x22, 0x79, 0xe5, 0x5f, 0x4c, 0xe1, 0x62, 0xca, 0x45, 0x9c, 0x9d, 0x81, 0x2e, 0x65,
+	0x3a, 0xf3, 0xb5, 0x16, 0x3e, 0x55, 0xdc, 0x57, 0xa9, 0xd4, 0x32, 0x92, 0x89, 0x9f, 0xc8, 0x94,
+	0x96, 0x54, 0xf8, 0x0c, 0x0a, 0x1e, 0x81, 0x57, 0xe9, 0xb8, 0xbe, 0x50, 0x5b, 0x3b, 0xb1, 0x94,
+	0x71, 0x02, 0x36, 0x3e, 0xce, 0x27, 0x3e, 0x5c, 0x29, 0x3d, 0xb7, 0xa9, 0xd6, 0xfe, 0x6f, 0x8d,
+	0x62, 0x19, 0xcb, 0xfb, 0x94, 0xf9, 0xaa, 0x3e, 0xaa, 0xca, 0xc6, 0xf7, 0x3e, 0x3b, 0x68, 0x73,
+	0x50, 0x75, 0x19, 0x31, 0x10, 0x9a, 0x4f, 0x38, 0xa4, 0xf8, 0x0c, 0xd5, 0xa9, 0x52, 0x21, 0xe4,
+	0x9c, 0x38, 0x1d, 0xa7, 0xbb, 0x71, 0x72, 0x7c, 0x7d, 0xb3, 0xfb, 0xf2, 0xa1, 0x13, 0x44, 0x32,
+	0x05, 0x5f, 0xcf, 0x15, 0x64, 0x5e, 0x4f, 0xa9, 0xe1, 0xe5, 0x28, 0xa8, 0x51, 0xa5, 0x86, 0x39,
+	0x37, 0x3c, 0x06, 0x45, 0xc5, 0xfb, 0x7f, 0x25, 0xde, 0x00, 0x8a, 0x8a, 0xc7, 0xa0, 0x18, 0xe6,
+	0x7c, 0xef, 0x63, 0x0d, 0xd5, 0xec, 0xa6, 0xff, 0xf5, 0xad, 0xe2, 0x2d, 0x64, 0xc8, 0x21, 0x67,
+	0x64, 0xad, 0xe3, 0x74, 0xdd, 0x60, 0x9d, 0x2a, 0x35, 0x62, 0x46, 0x36, 0x6d, 0x38, 0x23, 0x8f,
+	0xac, 0xcc, 0xa0, 0x18, 0x31, 0xfc, 0x1e, 0x35, 0x8c, 0x4c, 0x19, 0x4b, 0xc9, 0x7a, 0xd5, 0xfe,
+	0xd5, 0xf5, 0xcd, 0xee, 0xc1, 0xdf, 0xb5, 0xef, 0x31, 0x96, 0x06, 0xe6, 0x14, 0xa6, 0xc0, 0x01,
+	0x72, 0x45, 0x39, 0x0b, 0xb3, 0x70, 0x06, 0x73, 0x52, 0x5b, 0x89, 0x79, 0x56, 0xce, 0xce, 0xdf,
+	0xc2, 0x3c, 0xa8, 0x0b, 0x5b, 0x18, 0xa6, 0x39, 0x94, 0x65, 0xd6, 0x57, 0x62, 0xf6, 0x94, 0xb2,
+	0x4c, 0x6a, 0x8b, 0xbb, 0x8b, 0x34, 0xc4, 0xc6, 0xaa, 0x17, 0x69, 0x80, 0xe6, 0xe7, 0x36, 0x3c,
+	0x82, 0x1a, 0x93, 0x30, 0x12, 0x3a, 0xcc, 0x15, 0x71, 0x3b, 0x4e, 0xb7, 0x19, 0xd4, 0x26, 0x7d,
+	0xa1, 0x2f, 0x15, 0x7e, 0x8e, 0x90, 0x75, 0x98, 0x2c, 0x05, 0x41, 0x95, 0xd7, 0x30, 0xde, 0x40,
+	0x96, 0x02, 0xef, 0xa3, 0xa7, 0x8c, 0x67, 0x74, 0x9c, 0x40, 0x68, 0x53, 0xd1, 0x14, 0xa2, 0x19,
+	0x79, 0xdc, 0x71, 0xba, 0x8d, 0x60, 0x73, 0x61, 0x9d, 0xf6, 0x85, 0xee, 0x1b, 0x1d, 0xbf, 0x40,
+	0x9b, 0x79, 0x06, 0xd9, 0xe1, 0x41, 0x38, 0xe6, 0xda, 0xae, 0x20, 0x1b, 0x55, 0xb6, 0x69, 0xf5,
+	0x13, 0xae, 0x4d, 0x1a, 0x1f, 0xa3, 0x6d, 0x1a, 0x69, 0x5e, 0x50, 0xcd, 0xa5, 0x08, 0x23, 0x29,
+	0x32, 0x9d, 0x52, 0x2e, 0x74, 0x46, 0x9a, 0xd5, 0x3f, 0x60, 0xeb, 0xde, 0xed, 0xdf, 0x9b, 0x78,
+	0x07, 0xb9, 0x09, 0xcd, 0x74, 0x98, 0x01, 0x08, 0xb2, 0xd5, 0x71, 0xba, 0x6b, 0x41, 0xc3, 0x08,
+	0xe7, 0x00, 0xe2, 0xe0, 0x8b, 0x83, 0x9a, 0xf6, 0x1d, 0xbc, 0xa3, 0x82, 0xc6, 0x90, 0xe2, 0xd7,
+	0xc8, 0x7d, 0x03, 0x7a, 0xf1, 0x36, 0x9e, 0x79, 0x8b, 0x89, 0xe1, 0x2d, 0xbf, 0xf0, 0xd6, 0x93,
+	0x25, 0x0b, 0x1f, 0x21, 0xf7, 0xfc, 0xd7, 0xc2, 0x65, 0xb7, 0xb5, 0xed, 0xd9, 0x91, 0xe3, 0xdd,
+	0x0d, 0x13, 0x6f, 0x68, 0x46, 0x0e, 0xee, 0xa1, 0x8d, 0x01, 0x24, 0xa0, 0xe1, 0xe1, 0x8e, 0x7f,
+	0x40, 0x9c, 0x9c, 0x7e, 0xbd, 0x6d, 0x3b, 0xdf, 0x6e, 0xdb, 0xce, 0xf7, 0xdb, 0xb6, 0xf3, 0xe9,
+	0x47, 0xfb, 0xbf, 0x0f, 0x47, 0xab, 0x8c, 0xca, 0x71, 0xad, 0x52, 0x0e, 0x7f, 0x06, 0x00, 0x00,
+	0xff, 0xff, 0x5e, 0xdc, 0x9f, 0x7c, 0x69, 0x05, 0x00, 0x00,
 }

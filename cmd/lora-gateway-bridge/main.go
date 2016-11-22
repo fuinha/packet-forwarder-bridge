@@ -149,7 +149,7 @@ func main() {
 		cli.StringFlag{
 			Name:   "ttn-inject-region",
 			Usage:  "TTN Region to inject into Status messages",
-			Value:  "", // Possible values: EU_863_870 US_902_928 CN_779_787 EU_433 AU_915_928 CN_470_510 AS_923 SK_920_923
+			Value:  "", // Possible values: EU_863_870 US_902_928 CN_779_787 EU_433 AU_915_928 CN_470_510 AS_923 KR_920_923
 			EnvVar: "TTN_INJECT_REGION",
 		},
 		cli.UintFlag{

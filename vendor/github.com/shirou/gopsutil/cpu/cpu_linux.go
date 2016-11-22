@@ -144,17 +144,29 @@ func Info() ([]InfoStat, error) {
 			c.Family = value
 		case "model":
 			c.Model = value
-		case "model name":
+		case "model name", "cpu":
 			c.ModelName = value
-		case "stepping":
-			t, err := strconv.ParseInt(value, 10, 64)
+			if strings.Contains(value, "POWER8") ||
+			   strings.Contains(value, "POWER7") {
+				c.Model = strings.Split(value, " ")[0]
+				c.Family = "POWER"
+				c.VendorID = "IBM"
+			}
+		case "stepping", "revision":
+			val := value
+
+			if key == "revision" {
+				val = strings.Split(value, ".")[0]
+			}
+
+			t, err := strconv.ParseInt(val, 10, 64)
 			if err != nil {
 				return ret, err
 			}
 			c.Stepping = int32(t)
-		case "cpu MHz":
+		case "cpu MHz", "clock":
 			// treat this as the fallback value, thus we ignore error
-			if t, err := strconv.ParseFloat(value, 64); err == nil {
+			if t, err := strconv.ParseFloat(strings.Replace(value, "MHz", "", 1), 64); err == nil {
 				c.Mhz = t
 			}
 		case "cache size":

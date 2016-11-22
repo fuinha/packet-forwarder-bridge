@@ -60,6 +60,7 @@ func (*SubscribeRequest) Descriptor() ([]byte, []int) { return fileDescriptorRou
 
 type UplinkMessage struct {
 	Payload          []byte               `protobuf:"bytes,1,opt,name=payload,proto3" json:"payload,omitempty"`
+	Message          *protocol.Message    `protobuf:"bytes,2,opt,name=message" json:"message,omitempty"`
 	ProtocolMetadata *protocol.RxMetadata `protobuf:"bytes,11,opt,name=protocol_metadata,json=protocolMetadata" json:"protocol_metadata,omitempty"`
 	GatewayMetadata  *gateway.RxMetadata  `protobuf:"bytes,12,opt,name=gateway_metadata,json=gatewayMetadata" json:"gateway_metadata,omitempty"`
 }
@@ -68,6 +69,13 @@ func (m *UplinkMessage) Reset()                    { *m = UplinkMessage{} }
 func (m *UplinkMessage) String() string            { return proto.CompactTextString(m) }
 func (*UplinkMessage) ProtoMessage()               {}
 func (*UplinkMessage) Descriptor() ([]byte, []int) { return fileDescriptorRouter, []int{1} }
+
+func (m *UplinkMessage) GetMessage() *protocol.Message {
+	if m != nil {
+		return m.Message
+	}
+	return nil
+}
 
 func (m *UplinkMessage) GetProtocolMetadata() *protocol.RxMetadata {
 	if m != nil {
@@ -85,6 +93,7 @@ func (m *UplinkMessage) GetGatewayMetadata() *gateway.RxMetadata {
 
 type DownlinkMessage struct {
 	Payload               []byte                    `protobuf:"bytes,1,opt,name=payload,proto3" json:"payload,omitempty"`
+	Message               *protocol.Message         `protobuf:"bytes,2,opt,name=message" json:"message,omitempty"`
 	ProtocolConfiguration *protocol.TxConfiguration `protobuf:"bytes,11,opt,name=protocol_configuration,json=protocolConfiguration" json:"protocol_configuration,omitempty"`
 	GatewayConfiguration  *gateway.TxConfiguration  `protobuf:"bytes,12,opt,name=gateway_configuration,json=gatewayConfiguration" json:"gateway_configuration,omitempty"`
 }
@@ -93,6 +102,13 @@ func (m *DownlinkMessage) Reset()                    { *m = DownlinkMessage{} }
 func (m *DownlinkMessage) String() string            { return proto.CompactTextString(m) }
 func (*DownlinkMessage) ProtoMessage()               {}
 func (*DownlinkMessage) Descriptor() ([]byte, []int) { return fileDescriptorRouter, []int{2} }
+
+func (m *DownlinkMessage) GetMessage() *protocol.Message {
+	if m != nil {
+		return m.Message
+	}
+	return nil
+}
 
 func (m *DownlinkMessage) GetProtocolConfiguration() *protocol.TxConfiguration {
 	if m != nil {
@@ -109,17 +125,26 @@ func (m *DownlinkMessage) GetGatewayConfiguration() *gateway.TxConfiguration {
 }
 
 type DeviceActivationRequest struct {
-	Payload          []byte                                             `protobuf:"bytes,1,opt,name=payload,proto3" json:"payload,omitempty"`
-	DevEui           *github_com_TheThingsNetwork_ttn_core_types.DevEUI `protobuf:"bytes,11,opt,name=dev_eui,json=devEui,proto3,customtype=github.com/TheThingsNetwork/ttn/core/types.DevEUI" json:"dev_eui,omitempty"`
-	AppEui           *github_com_TheThingsNetwork_ttn_core_types.AppEUI `protobuf:"bytes,12,opt,name=app_eui,json=appEui,proto3,customtype=github.com/TheThingsNetwork/ttn/core/types.AppEUI" json:"app_eui,omitempty"`
-	ProtocolMetadata *protocol.RxMetadata                               `protobuf:"bytes,21,opt,name=protocol_metadata,json=protocolMetadata" json:"protocol_metadata,omitempty"`
-	GatewayMetadata  *gateway.RxMetadata                                `protobuf:"bytes,22,opt,name=gateway_metadata,json=gatewayMetadata" json:"gateway_metadata,omitempty"`
+	Payload            []byte                                             `protobuf:"bytes,1,opt,name=payload,proto3" json:"payload,omitempty"`
+	Message            *protocol.Message                                  `protobuf:"bytes,2,opt,name=message" json:"message,omitempty"`
+	DevEui             *github_com_TheThingsNetwork_ttn_core_types.DevEUI `protobuf:"bytes,11,opt,name=dev_eui,json=devEui,proto3,customtype=github.com/TheThingsNetwork/ttn/core/types.DevEUI" json:"dev_eui,omitempty"`
+	AppEui             *github_com_TheThingsNetwork_ttn_core_types.AppEUI `protobuf:"bytes,12,opt,name=app_eui,json=appEui,proto3,customtype=github.com/TheThingsNetwork/ttn/core/types.AppEUI" json:"app_eui,omitempty"`
+	ProtocolMetadata   *protocol.RxMetadata                               `protobuf:"bytes,21,opt,name=protocol_metadata,json=protocolMetadata" json:"protocol_metadata,omitempty"`
+	GatewayMetadata    *gateway.RxMetadata                                `protobuf:"bytes,22,opt,name=gateway_metadata,json=gatewayMetadata" json:"gateway_metadata,omitempty"`
+	ActivationMetadata *protocol.ActivationMetadata                       `protobuf:"bytes,23,opt,name=activation_metadata,json=activationMetadata" json:"activation_metadata,omitempty"`
 }
 
 func (m *DeviceActivationRequest) Reset()                    { *m = DeviceActivationRequest{} }
 func (m *DeviceActivationRequest) String() string            { return proto.CompactTextString(m) }
 func (*DeviceActivationRequest) ProtoMessage()               {}
 func (*DeviceActivationRequest) Descriptor() ([]byte, []int) { return fileDescriptorRouter, []int{3} }
+
+func (m *DeviceActivationRequest) GetMessage() *protocol.Message {
+	if m != nil {
+		return m.Message
+	}
+	return nil
+}
 
 func (m *DeviceActivationRequest) GetProtocolMetadata() *protocol.RxMetadata {
 	if m != nil {
@@ -131,6 +156,13 @@ func (m *DeviceActivationRequest) GetProtocolMetadata() *protocol.RxMetadata {
 func (m *DeviceActivationRequest) GetGatewayMetadata() *gateway.RxMetadata {
 	if m != nil {
 		return m.GatewayMetadata
+	}
+	return nil
+}
+
+func (m *DeviceActivationRequest) GetActivationMetadata() *protocol.ActivationMetadata {
+	if m != nil {
+		return m.ActivationMetadata
 	}
 	return nil
 }
@@ -258,7 +290,7 @@ var _ grpc.ClientConn
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion3
+const _ = grpc.SupportPackageIsVersion4
 
 // Client API for Router service
 
@@ -524,7 +556,7 @@ var _Router_serviceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: fileDescriptorRouter,
+	Metadata: "github.com/TheThingsNetwork/ttn/api/router/router.proto",
 }
 
 // Client API for RouterManager service
@@ -625,20 +657,20 @@ var _RouterManager_serviceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: fileDescriptorRouter,
+	Metadata: "github.com/TheThingsNetwork/ttn/api/router/router.proto",
 }
 
-func (m *SubscribeRequest) Marshal() (data []byte, err error) {
+func (m *SubscribeRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
 	if err != nil {
 		return nil, err
 	}
-	return data[:n], nil
+	return dAtA[:n], nil
 }
 
-func (m *SubscribeRequest) MarshalTo(data []byte) (int, error) {
+func (m *SubscribeRequest) MarshalTo(dAtA []byte) (int, error) {
 	var i int
 	_ = i
 	var l int
@@ -646,372 +678,414 @@ func (m *SubscribeRequest) MarshalTo(data []byte) (int, error) {
 	return i, nil
 }
 
-func (m *UplinkMessage) Marshal() (data []byte, err error) {
+func (m *UplinkMessage) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
 	if err != nil {
 		return nil, err
 	}
-	return data[:n], nil
+	return dAtA[:n], nil
 }
 
-func (m *UplinkMessage) MarshalTo(data []byte) (int, error) {
+func (m *UplinkMessage) MarshalTo(dAtA []byte) (int, error) {
 	var i int
 	_ = i
 	var l int
 	_ = l
 	if len(m.Payload) > 0 {
-		data[i] = 0xa
+		dAtA[i] = 0xa
 		i++
-		i = encodeVarintRouter(data, i, uint64(len(m.Payload)))
-		i += copy(data[i:], m.Payload)
+		i = encodeVarintRouter(dAtA, i, uint64(len(m.Payload)))
+		i += copy(dAtA[i:], m.Payload)
 	}
-	if m.ProtocolMetadata != nil {
-		data[i] = 0x5a
+	if m.Message != nil {
+		dAtA[i] = 0x12
 		i++
-		i = encodeVarintRouter(data, i, uint64(m.ProtocolMetadata.Size()))
-		n1, err := m.ProtocolMetadata.MarshalTo(data[i:])
+		i = encodeVarintRouter(dAtA, i, uint64(m.Message.Size()))
+		n1, err := m.Message.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
 		i += n1
 	}
-	if m.GatewayMetadata != nil {
-		data[i] = 0x62
+	if m.ProtocolMetadata != nil {
+		dAtA[i] = 0x5a
 		i++
-		i = encodeVarintRouter(data, i, uint64(m.GatewayMetadata.Size()))
-		n2, err := m.GatewayMetadata.MarshalTo(data[i:])
+		i = encodeVarintRouter(dAtA, i, uint64(m.ProtocolMetadata.Size()))
+		n2, err := m.ProtocolMetadata.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
 		i += n2
 	}
-	return i, nil
-}
-
-func (m *DownlinkMessage) Marshal() (data []byte, err error) {
-	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
-	if err != nil {
-		return nil, err
-	}
-	return data[:n], nil
-}
-
-func (m *DownlinkMessage) MarshalTo(data []byte) (int, error) {
-	var i int
-	_ = i
-	var l int
-	_ = l
-	if len(m.Payload) > 0 {
-		data[i] = 0xa
+	if m.GatewayMetadata != nil {
+		dAtA[i] = 0x62
 		i++
-		i = encodeVarintRouter(data, i, uint64(len(m.Payload)))
-		i += copy(data[i:], m.Payload)
-	}
-	if m.ProtocolConfiguration != nil {
-		data[i] = 0x5a
-		i++
-		i = encodeVarintRouter(data, i, uint64(m.ProtocolConfiguration.Size()))
-		n3, err := m.ProtocolConfiguration.MarshalTo(data[i:])
+		i = encodeVarintRouter(dAtA, i, uint64(m.GatewayMetadata.Size()))
+		n3, err := m.GatewayMetadata.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
 		i += n3
 	}
-	if m.GatewayConfiguration != nil {
-		data[i] = 0x62
-		i++
-		i = encodeVarintRouter(data, i, uint64(m.GatewayConfiguration.Size()))
-		n4, err := m.GatewayConfiguration.MarshalTo(data[i:])
-		if err != nil {
-			return 0, err
-		}
-		i += n4
-	}
 	return i, nil
 }
 
-func (m *DeviceActivationRequest) Marshal() (data []byte, err error) {
+func (m *DownlinkMessage) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
 	if err != nil {
 		return nil, err
 	}
-	return data[:n], nil
+	return dAtA[:n], nil
 }
 
-func (m *DeviceActivationRequest) MarshalTo(data []byte) (int, error) {
+func (m *DownlinkMessage) MarshalTo(dAtA []byte) (int, error) {
 	var i int
 	_ = i
 	var l int
 	_ = l
 	if len(m.Payload) > 0 {
-		data[i] = 0xa
+		dAtA[i] = 0xa
 		i++
-		i = encodeVarintRouter(data, i, uint64(len(m.Payload)))
-		i += copy(data[i:], m.Payload)
+		i = encodeVarintRouter(dAtA, i, uint64(len(m.Payload)))
+		i += copy(dAtA[i:], m.Payload)
 	}
-	if m.DevEui != nil {
-		data[i] = 0x5a
+	if m.Message != nil {
+		dAtA[i] = 0x12
 		i++
-		i = encodeVarintRouter(data, i, uint64(m.DevEui.Size()))
-		n5, err := m.DevEui.MarshalTo(data[i:])
+		i = encodeVarintRouter(dAtA, i, uint64(m.Message.Size()))
+		n4, err := m.Message.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n4
+	}
+	if m.ProtocolConfiguration != nil {
+		dAtA[i] = 0x5a
+		i++
+		i = encodeVarintRouter(dAtA, i, uint64(m.ProtocolConfiguration.Size()))
+		n5, err := m.ProtocolConfiguration.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
 		i += n5
 	}
-	if m.AppEui != nil {
-		data[i] = 0x62
+	if m.GatewayConfiguration != nil {
+		dAtA[i] = 0x62
 		i++
-		i = encodeVarintRouter(data, i, uint64(m.AppEui.Size()))
-		n6, err := m.AppEui.MarshalTo(data[i:])
+		i = encodeVarintRouter(dAtA, i, uint64(m.GatewayConfiguration.Size()))
+		n6, err := m.GatewayConfiguration.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
 		i += n6
 	}
-	if m.ProtocolMetadata != nil {
-		data[i] = 0xaa
+	return i, nil
+}
+
+func (m *DeviceActivationRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *DeviceActivationRequest) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	if len(m.Payload) > 0 {
+		dAtA[i] = 0xa
 		i++
-		data[i] = 0x1
+		i = encodeVarintRouter(dAtA, i, uint64(len(m.Payload)))
+		i += copy(dAtA[i:], m.Payload)
+	}
+	if m.Message != nil {
+		dAtA[i] = 0x12
 		i++
-		i = encodeVarintRouter(data, i, uint64(m.ProtocolMetadata.Size()))
-		n7, err := m.ProtocolMetadata.MarshalTo(data[i:])
+		i = encodeVarintRouter(dAtA, i, uint64(m.Message.Size()))
+		n7, err := m.Message.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
 		i += n7
 	}
-	if m.GatewayMetadata != nil {
-		data[i] = 0xb2
+	if m.DevEui != nil {
+		dAtA[i] = 0x5a
 		i++
-		data[i] = 0x1
-		i++
-		i = encodeVarintRouter(data, i, uint64(m.GatewayMetadata.Size()))
-		n8, err := m.GatewayMetadata.MarshalTo(data[i:])
+		i = encodeVarintRouter(dAtA, i, uint64(m.DevEui.Size()))
+		n8, err := m.DevEui.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
 		i += n8
 	}
-	return i, nil
-}
-
-func (m *DeviceActivationResponse) Marshal() (data []byte, err error) {
-	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
-	if err != nil {
-		return nil, err
-	}
-	return data[:n], nil
-}
-
-func (m *DeviceActivationResponse) MarshalTo(data []byte) (int, error) {
-	var i int
-	_ = i
-	var l int
-	_ = l
-	return i, nil
-}
-
-func (m *GatewayStatusRequest) Marshal() (data []byte, err error) {
-	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
-	if err != nil {
-		return nil, err
-	}
-	return data[:n], nil
-}
-
-func (m *GatewayStatusRequest) MarshalTo(data []byte) (int, error) {
-	var i int
-	_ = i
-	var l int
-	_ = l
-	if len(m.GatewayId) > 0 {
-		data[i] = 0xa
+	if m.AppEui != nil {
+		dAtA[i] = 0x62
 		i++
-		i = encodeVarintRouter(data, i, uint64(len(m.GatewayId)))
-		i += copy(data[i:], m.GatewayId)
-	}
-	return i, nil
-}
-
-func (m *GatewayStatusResponse) Marshal() (data []byte, err error) {
-	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
-	if err != nil {
-		return nil, err
-	}
-	return data[:n], nil
-}
-
-func (m *GatewayStatusResponse) MarshalTo(data []byte) (int, error) {
-	var i int
-	_ = i
-	var l int
-	_ = l
-	if m.LastSeen != 0 {
-		data[i] = 0x8
-		i++
-		i = encodeVarintRouter(data, i, uint64(m.LastSeen))
-	}
-	if m.Status != nil {
-		data[i] = 0x12
-		i++
-		i = encodeVarintRouter(data, i, uint64(m.Status.Size()))
-		n9, err := m.Status.MarshalTo(data[i:])
+		i = encodeVarintRouter(dAtA, i, uint64(m.AppEui.Size()))
+		n9, err := m.AppEui.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
 		i += n9
 	}
-	return i, nil
-}
-
-func (m *StatusRequest) Marshal() (data []byte, err error) {
-	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
-	if err != nil {
-		return nil, err
-	}
-	return data[:n], nil
-}
-
-func (m *StatusRequest) MarshalTo(data []byte) (int, error) {
-	var i int
-	_ = i
-	var l int
-	_ = l
-	return i, nil
-}
-
-func (m *Status) Marshal() (data []byte, err error) {
-	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
-	if err != nil {
-		return nil, err
-	}
-	return data[:n], nil
-}
-
-func (m *Status) MarshalTo(data []byte) (int, error) {
-	var i int
-	_ = i
-	var l int
-	_ = l
-	if m.System != nil {
-		data[i] = 0xa
+	if m.ProtocolMetadata != nil {
+		dAtA[i] = 0xaa
 		i++
-		i = encodeVarintRouter(data, i, uint64(m.System.Size()))
-		n10, err := m.System.MarshalTo(data[i:])
+		dAtA[i] = 0x1
+		i++
+		i = encodeVarintRouter(dAtA, i, uint64(m.ProtocolMetadata.Size()))
+		n10, err := m.ProtocolMetadata.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
 		i += n10
 	}
-	if m.Component != nil {
-		data[i] = 0x12
+	if m.GatewayMetadata != nil {
+		dAtA[i] = 0xb2
 		i++
-		i = encodeVarintRouter(data, i, uint64(m.Component.Size()))
-		n11, err := m.Component.MarshalTo(data[i:])
+		dAtA[i] = 0x1
+		i++
+		i = encodeVarintRouter(dAtA, i, uint64(m.GatewayMetadata.Size()))
+		n11, err := m.GatewayMetadata.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
 		i += n11
 	}
-	if m.GatewayStatus != nil {
-		data[i] = 0x5a
+	if m.ActivationMetadata != nil {
+		dAtA[i] = 0xba
 		i++
-		i = encodeVarintRouter(data, i, uint64(m.GatewayStatus.Size()))
-		n12, err := m.GatewayStatus.MarshalTo(data[i:])
+		dAtA[i] = 0x1
+		i++
+		i = encodeVarintRouter(dAtA, i, uint64(m.ActivationMetadata.Size()))
+		n12, err := m.ActivationMetadata.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
 		i += n12
 	}
-	if m.Uplink != nil {
-		data[i] = 0x62
+	return i, nil
+}
+
+func (m *DeviceActivationResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *DeviceActivationResponse) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	return i, nil
+}
+
+func (m *GatewayStatusRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *GatewayStatusRequest) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	if len(m.GatewayId) > 0 {
+		dAtA[i] = 0xa
 		i++
-		i = encodeVarintRouter(data, i, uint64(m.Uplink.Size()))
-		n13, err := m.Uplink.MarshalTo(data[i:])
+		i = encodeVarintRouter(dAtA, i, uint64(len(m.GatewayId)))
+		i += copy(dAtA[i:], m.GatewayId)
+	}
+	return i, nil
+}
+
+func (m *GatewayStatusResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *GatewayStatusResponse) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	if m.LastSeen != 0 {
+		dAtA[i] = 0x8
+		i++
+		i = encodeVarintRouter(dAtA, i, uint64(m.LastSeen))
+	}
+	if m.Status != nil {
+		dAtA[i] = 0x12
+		i++
+		i = encodeVarintRouter(dAtA, i, uint64(m.Status.Size()))
+		n13, err := m.Status.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
 		i += n13
 	}
-	if m.Downlink != nil {
-		data[i] = 0x6a
+	return i, nil
+}
+
+func (m *StatusRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *StatusRequest) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	return i, nil
+}
+
+func (m *Status) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *Status) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	if m.System != nil {
+		dAtA[i] = 0xa
 		i++
-		i = encodeVarintRouter(data, i, uint64(m.Downlink.Size()))
-		n14, err := m.Downlink.MarshalTo(data[i:])
+		i = encodeVarintRouter(dAtA, i, uint64(m.System.Size()))
+		n14, err := m.System.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
 		i += n14
 	}
-	if m.Activations != nil {
-		data[i] = 0x72
+	if m.Component != nil {
+		dAtA[i] = 0x12
 		i++
-		i = encodeVarintRouter(data, i, uint64(m.Activations.Size()))
-		n15, err := m.Activations.MarshalTo(data[i:])
+		i = encodeVarintRouter(dAtA, i, uint64(m.Component.Size()))
+		n15, err := m.Component.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
 		i += n15
 	}
+	if m.GatewayStatus != nil {
+		dAtA[i] = 0x5a
+		i++
+		i = encodeVarintRouter(dAtA, i, uint64(m.GatewayStatus.Size()))
+		n16, err := m.GatewayStatus.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n16
+	}
+	if m.Uplink != nil {
+		dAtA[i] = 0x62
+		i++
+		i = encodeVarintRouter(dAtA, i, uint64(m.Uplink.Size()))
+		n17, err := m.Uplink.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n17
+	}
+	if m.Downlink != nil {
+		dAtA[i] = 0x6a
+		i++
+		i = encodeVarintRouter(dAtA, i, uint64(m.Downlink.Size()))
+		n18, err := m.Downlink.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n18
+	}
+	if m.Activations != nil {
+		dAtA[i] = 0x72
+		i++
+		i = encodeVarintRouter(dAtA, i, uint64(m.Activations.Size()))
+		n19, err := m.Activations.MarshalTo(dAtA[i:])
+		if err != nil {
+			return 0, err
+		}
+		i += n19
+	}
 	if m.ConnectedGateways != 0 {
-		data[i] = 0xa8
+		dAtA[i] = 0xa8
 		i++
-		data[i] = 0x1
+		dAtA[i] = 0x1
 		i++
-		i = encodeVarintRouter(data, i, uint64(m.ConnectedGateways))
+		i = encodeVarintRouter(dAtA, i, uint64(m.ConnectedGateways))
 	}
 	if m.ConnectedBrokers != 0 {
-		data[i] = 0xb0
+		dAtA[i] = 0xb0
 		i++
-		data[i] = 0x1
+		dAtA[i] = 0x1
 		i++
-		i = encodeVarintRouter(data, i, uint64(m.ConnectedBrokers))
+		i = encodeVarintRouter(dAtA, i, uint64(m.ConnectedBrokers))
 	}
 	return i, nil
 }
 
-func encodeFixed64Router(data []byte, offset int, v uint64) int {
-	data[offset] = uint8(v)
-	data[offset+1] = uint8(v >> 8)
-	data[offset+2] = uint8(v >> 16)
-	data[offset+3] = uint8(v >> 24)
-	data[offset+4] = uint8(v >> 32)
-	data[offset+5] = uint8(v >> 40)
-	data[offset+6] = uint8(v >> 48)
-	data[offset+7] = uint8(v >> 56)
+func encodeFixed64Router(dAtA []byte, offset int, v uint64) int {
+	dAtA[offset] = uint8(v)
+	dAtA[offset+1] = uint8(v >> 8)
+	dAtA[offset+2] = uint8(v >> 16)
+	dAtA[offset+3] = uint8(v >> 24)
+	dAtA[offset+4] = uint8(v >> 32)
+	dAtA[offset+5] = uint8(v >> 40)
+	dAtA[offset+6] = uint8(v >> 48)
+	dAtA[offset+7] = uint8(v >> 56)
 	return offset + 8
 }
-func encodeFixed32Router(data []byte, offset int, v uint32) int {
-	data[offset] = uint8(v)
-	data[offset+1] = uint8(v >> 8)
-	data[offset+2] = uint8(v >> 16)
-	data[offset+3] = uint8(v >> 24)
+func encodeFixed32Router(dAtA []byte, offset int, v uint32) int {
+	dAtA[offset] = uint8(v)
+	dAtA[offset+1] = uint8(v >> 8)
+	dAtA[offset+2] = uint8(v >> 16)
+	dAtA[offset+3] = uint8(v >> 24)
 	return offset + 4
 }
-func encodeVarintRouter(data []byte, offset int, v uint64) int {
+func encodeVarintRouter(dAtA []byte, offset int, v uint64) int {
 	for v >= 1<<7 {
-		data[offset] = uint8(v&0x7f | 0x80)
+		dAtA[offset] = uint8(v&0x7f | 0x80)
 		v >>= 7
 		offset++
 	}
-	data[offset] = uint8(v)
+	dAtA[offset] = uint8(v)
 	return offset + 1
 }
 func (m *SubscribeRequest) Size() (n int) {
@@ -1025,6 +1099,10 @@ func (m *UplinkMessage) Size() (n int) {
 	_ = l
 	l = len(m.Payload)
 	if l > 0 {
+		n += 1 + l + sovRouter(uint64(l))
+	}
+	if m.Message != nil {
+		l = m.Message.Size()
 		n += 1 + l + sovRouter(uint64(l))
 	}
 	if m.ProtocolMetadata != nil {
@@ -1045,6 +1123,10 @@ func (m *DownlinkMessage) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovRouter(uint64(l))
 	}
+	if m.Message != nil {
+		l = m.Message.Size()
+		n += 1 + l + sovRouter(uint64(l))
+	}
 	if m.ProtocolConfiguration != nil {
 		l = m.ProtocolConfiguration.Size()
 		n += 1 + l + sovRouter(uint64(l))
@@ -1063,6 +1145,10 @@ func (m *DeviceActivationRequest) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovRouter(uint64(l))
 	}
+	if m.Message != nil {
+		l = m.Message.Size()
+		n += 1 + l + sovRouter(uint64(l))
+	}
 	if m.DevEui != nil {
 		l = m.DevEui.Size()
 		n += 1 + l + sovRouter(uint64(l))
@@ -1077,6 +1163,10 @@ func (m *DeviceActivationRequest) Size() (n int) {
 	}
 	if m.GatewayMetadata != nil {
 		l = m.GatewayMetadata.Size()
+		n += 2 + l + sovRouter(uint64(l))
+	}
+	if m.ActivationMetadata != nil {
+		l = m.ActivationMetadata.Size()
 		n += 2 + l + sovRouter(uint64(l))
 	}
 	return n
@@ -1166,8 +1256,8 @@ func sovRouter(x uint64) (n int) {
 func sozRouter(x uint64) (n int) {
 	return sovRouter(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *SubscribeRequest) Unmarshal(data []byte) error {
-	l := len(data)
+func (m *SubscribeRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		preIndex := iNdEx
@@ -1179,7 +1269,7 @@ func (m *SubscribeRequest) Unmarshal(data []byte) error {
 			if iNdEx >= l {
 				return io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -1197,7 +1287,7 @@ func (m *SubscribeRequest) Unmarshal(data []byte) error {
 		switch fieldNum {
 		default:
 			iNdEx = preIndex
-			skippy, err := skipRouter(data[iNdEx:])
+			skippy, err := skipRouter(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
@@ -1216,8 +1306,8 @@ func (m *SubscribeRequest) Unmarshal(data []byte) error {
 	}
 	return nil
 }
-func (m *UplinkMessage) Unmarshal(data []byte) error {
-	l := len(data)
+func (m *UplinkMessage) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		preIndex := iNdEx
@@ -1229,7 +1319,7 @@ func (m *UplinkMessage) Unmarshal(data []byte) error {
 			if iNdEx >= l {
 				return io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -1257,7 +1347,7 @@ func (m *UplinkMessage) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				byteLen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1271,9 +1361,42 @@ func (m *UplinkMessage) Unmarshal(data []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Payload = append(m.Payload[:0], data[iNdEx:postIndex]...)
+			m.Payload = append(m.Payload[:0], dAtA[iNdEx:postIndex]...)
 			if m.Payload == nil {
 				m.Payload = []byte{}
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Message", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRouter
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthRouter
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Message == nil {
+				m.Message = &protocol.Message{}
+			}
+			if err := m.Message.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
 			}
 			iNdEx = postIndex
 		case 11:
@@ -1288,7 +1411,7 @@ func (m *UplinkMessage) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				msglen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1305,7 +1428,7 @@ func (m *UplinkMessage) Unmarshal(data []byte) error {
 			if m.ProtocolMetadata == nil {
 				m.ProtocolMetadata = &protocol.RxMetadata{}
 			}
-			if err := m.ProtocolMetadata.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.ProtocolMetadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -1321,7 +1444,7 @@ func (m *UplinkMessage) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				msglen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1338,13 +1461,13 @@ func (m *UplinkMessage) Unmarshal(data []byte) error {
 			if m.GatewayMetadata == nil {
 				m.GatewayMetadata = &gateway.RxMetadata{}
 			}
-			if err := m.GatewayMetadata.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.GatewayMetadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
-			skippy, err := skipRouter(data[iNdEx:])
+			skippy, err := skipRouter(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
@@ -1363,8 +1486,8 @@ func (m *UplinkMessage) Unmarshal(data []byte) error {
 	}
 	return nil
 }
-func (m *DownlinkMessage) Unmarshal(data []byte) error {
-	l := len(data)
+func (m *DownlinkMessage) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		preIndex := iNdEx
@@ -1376,7 +1499,7 @@ func (m *DownlinkMessage) Unmarshal(data []byte) error {
 			if iNdEx >= l {
 				return io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -1404,7 +1527,7 @@ func (m *DownlinkMessage) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				byteLen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1418,9 +1541,42 @@ func (m *DownlinkMessage) Unmarshal(data []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Payload = append(m.Payload[:0], data[iNdEx:postIndex]...)
+			m.Payload = append(m.Payload[:0], dAtA[iNdEx:postIndex]...)
 			if m.Payload == nil {
 				m.Payload = []byte{}
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Message", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRouter
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthRouter
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Message == nil {
+				m.Message = &protocol.Message{}
+			}
+			if err := m.Message.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
 			}
 			iNdEx = postIndex
 		case 11:
@@ -1435,7 +1591,7 @@ func (m *DownlinkMessage) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				msglen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1452,7 +1608,7 @@ func (m *DownlinkMessage) Unmarshal(data []byte) error {
 			if m.ProtocolConfiguration == nil {
 				m.ProtocolConfiguration = &protocol.TxConfiguration{}
 			}
-			if err := m.ProtocolConfiguration.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.ProtocolConfiguration.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -1468,7 +1624,7 @@ func (m *DownlinkMessage) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				msglen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1485,13 +1641,13 @@ func (m *DownlinkMessage) Unmarshal(data []byte) error {
 			if m.GatewayConfiguration == nil {
 				m.GatewayConfiguration = &gateway.TxConfiguration{}
 			}
-			if err := m.GatewayConfiguration.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.GatewayConfiguration.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
-			skippy, err := skipRouter(data[iNdEx:])
+			skippy, err := skipRouter(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
@@ -1510,8 +1666,8 @@ func (m *DownlinkMessage) Unmarshal(data []byte) error {
 	}
 	return nil
 }
-func (m *DeviceActivationRequest) Unmarshal(data []byte) error {
-	l := len(data)
+func (m *DeviceActivationRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		preIndex := iNdEx
@@ -1523,7 +1679,7 @@ func (m *DeviceActivationRequest) Unmarshal(data []byte) error {
 			if iNdEx >= l {
 				return io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -1551,7 +1707,7 @@ func (m *DeviceActivationRequest) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				byteLen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1565,9 +1721,42 @@ func (m *DeviceActivationRequest) Unmarshal(data []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Payload = append(m.Payload[:0], data[iNdEx:postIndex]...)
+			m.Payload = append(m.Payload[:0], dAtA[iNdEx:postIndex]...)
 			if m.Payload == nil {
 				m.Payload = []byte{}
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Message", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRouter
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthRouter
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Message == nil {
+				m.Message = &protocol.Message{}
+			}
+			if err := m.Message.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
 			}
 			iNdEx = postIndex
 		case 11:
@@ -1582,7 +1771,7 @@ func (m *DeviceActivationRequest) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				byteLen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1598,7 +1787,7 @@ func (m *DeviceActivationRequest) Unmarshal(data []byte) error {
 			}
 			var v github_com_TheThingsNetwork_ttn_core_types.DevEUI
 			m.DevEui = &v
-			if err := m.DevEui.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.DevEui.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -1614,7 +1803,7 @@ func (m *DeviceActivationRequest) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				byteLen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1630,7 +1819,7 @@ func (m *DeviceActivationRequest) Unmarshal(data []byte) error {
 			}
 			var v github_com_TheThingsNetwork_ttn_core_types.AppEUI
 			m.AppEui = &v
-			if err := m.AppEui.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.AppEui.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -1646,7 +1835,7 @@ func (m *DeviceActivationRequest) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				msglen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1663,7 +1852,7 @@ func (m *DeviceActivationRequest) Unmarshal(data []byte) error {
 			if m.ProtocolMetadata == nil {
 				m.ProtocolMetadata = &protocol.RxMetadata{}
 			}
-			if err := m.ProtocolMetadata.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.ProtocolMetadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -1679,7 +1868,7 @@ func (m *DeviceActivationRequest) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				msglen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1696,13 +1885,46 @@ func (m *DeviceActivationRequest) Unmarshal(data []byte) error {
 			if m.GatewayMetadata == nil {
 				m.GatewayMetadata = &gateway.RxMetadata{}
 			}
-			if err := m.GatewayMetadata.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.GatewayMetadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 23:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ActivationMetadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowRouter
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthRouter
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.ActivationMetadata == nil {
+				m.ActivationMetadata = &protocol.ActivationMetadata{}
+			}
+			if err := m.ActivationMetadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
-			skippy, err := skipRouter(data[iNdEx:])
+			skippy, err := skipRouter(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
@@ -1721,8 +1943,8 @@ func (m *DeviceActivationRequest) Unmarshal(data []byte) error {
 	}
 	return nil
 }
-func (m *DeviceActivationResponse) Unmarshal(data []byte) error {
-	l := len(data)
+func (m *DeviceActivationResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		preIndex := iNdEx
@@ -1734,7 +1956,7 @@ func (m *DeviceActivationResponse) Unmarshal(data []byte) error {
 			if iNdEx >= l {
 				return io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -1752,7 +1974,7 @@ func (m *DeviceActivationResponse) Unmarshal(data []byte) error {
 		switch fieldNum {
 		default:
 			iNdEx = preIndex
-			skippy, err := skipRouter(data[iNdEx:])
+			skippy, err := skipRouter(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
@@ -1771,8 +1993,8 @@ func (m *DeviceActivationResponse) Unmarshal(data []byte) error {
 	}
 	return nil
 }
-func (m *GatewayStatusRequest) Unmarshal(data []byte) error {
-	l := len(data)
+func (m *GatewayStatusRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		preIndex := iNdEx
@@ -1784,7 +2006,7 @@ func (m *GatewayStatusRequest) Unmarshal(data []byte) error {
 			if iNdEx >= l {
 				return io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -1812,7 +2034,7 @@ func (m *GatewayStatusRequest) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				stringLen |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1827,11 +2049,11 @@ func (m *GatewayStatusRequest) Unmarshal(data []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.GatewayId = string(data[iNdEx:postIndex])
+			m.GatewayId = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
-			skippy, err := skipRouter(data[iNdEx:])
+			skippy, err := skipRouter(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
@@ -1850,8 +2072,8 @@ func (m *GatewayStatusRequest) Unmarshal(data []byte) error {
 	}
 	return nil
 }
-func (m *GatewayStatusResponse) Unmarshal(data []byte) error {
-	l := len(data)
+func (m *GatewayStatusResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		preIndex := iNdEx
@@ -1863,7 +2085,7 @@ func (m *GatewayStatusResponse) Unmarshal(data []byte) error {
 			if iNdEx >= l {
 				return io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -1891,7 +2113,7 @@ func (m *GatewayStatusResponse) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				m.LastSeen |= (int64(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1910,7 +2132,7 @@ func (m *GatewayStatusResponse) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				msglen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1927,13 +2149,13 @@ func (m *GatewayStatusResponse) Unmarshal(data []byte) error {
 			if m.Status == nil {
 				m.Status = &gateway.Status{}
 			}
-			if err := m.Status.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.Status.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
-			skippy, err := skipRouter(data[iNdEx:])
+			skippy, err := skipRouter(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
@@ -1952,8 +2174,8 @@ func (m *GatewayStatusResponse) Unmarshal(data []byte) error {
 	}
 	return nil
 }
-func (m *StatusRequest) Unmarshal(data []byte) error {
-	l := len(data)
+func (m *StatusRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		preIndex := iNdEx
@@ -1965,7 +2187,7 @@ func (m *StatusRequest) Unmarshal(data []byte) error {
 			if iNdEx >= l {
 				return io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -1983,7 +2205,7 @@ func (m *StatusRequest) Unmarshal(data []byte) error {
 		switch fieldNum {
 		default:
 			iNdEx = preIndex
-			skippy, err := skipRouter(data[iNdEx:])
+			skippy, err := skipRouter(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
@@ -2002,8 +2224,8 @@ func (m *StatusRequest) Unmarshal(data []byte) error {
 	}
 	return nil
 }
-func (m *Status) Unmarshal(data []byte) error {
-	l := len(data)
+func (m *Status) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		preIndex := iNdEx
@@ -2015,7 +2237,7 @@ func (m *Status) Unmarshal(data []byte) error {
 			if iNdEx >= l {
 				return io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -2043,7 +2265,7 @@ func (m *Status) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				msglen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -2060,7 +2282,7 @@ func (m *Status) Unmarshal(data []byte) error {
 			if m.System == nil {
 				m.System = &api.SystemStats{}
 			}
-			if err := m.System.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.System.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -2076,7 +2298,7 @@ func (m *Status) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				msglen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -2093,7 +2315,7 @@ func (m *Status) Unmarshal(data []byte) error {
 			if m.Component == nil {
 				m.Component = &api.ComponentStats{}
 			}
-			if err := m.Component.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.Component.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -2109,7 +2331,7 @@ func (m *Status) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				msglen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -2126,7 +2348,7 @@ func (m *Status) Unmarshal(data []byte) error {
 			if m.GatewayStatus == nil {
 				m.GatewayStatus = &api.Rates{}
 			}
-			if err := m.GatewayStatus.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.GatewayStatus.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -2142,7 +2364,7 @@ func (m *Status) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				msglen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -2159,7 +2381,7 @@ func (m *Status) Unmarshal(data []byte) error {
 			if m.Uplink == nil {
 				m.Uplink = &api.Rates{}
 			}
-			if err := m.Uplink.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.Uplink.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -2175,7 +2397,7 @@ func (m *Status) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				msglen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -2192,7 +2414,7 @@ func (m *Status) Unmarshal(data []byte) error {
 			if m.Downlink == nil {
 				m.Downlink = &api.Rates{}
 			}
-			if err := m.Downlink.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.Downlink.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -2208,7 +2430,7 @@ func (m *Status) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				msglen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -2225,7 +2447,7 @@ func (m *Status) Unmarshal(data []byte) error {
 			if m.Activations == nil {
 				m.Activations = &api.Rates{}
 			}
-			if err := m.Activations.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.Activations.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -2241,7 +2463,7 @@ func (m *Status) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				m.ConnectedGateways |= (uint32(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -2260,7 +2482,7 @@ func (m *Status) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				m.ConnectedBrokers |= (uint32(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -2269,7 +2491,7 @@ func (m *Status) Unmarshal(data []byte) error {
 			}
 		default:
 			iNdEx = preIndex
-			skippy, err := skipRouter(data[iNdEx:])
+			skippy, err := skipRouter(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
@@ -2288,8 +2510,8 @@ func (m *Status) Unmarshal(data []byte) error {
 	}
 	return nil
 }
-func skipRouter(data []byte) (n int, err error) {
-	l := len(data)
+func skipRouter(dAtA []byte) (n int, err error) {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		var wire uint64
@@ -2300,7 +2522,7 @@ func skipRouter(data []byte) (n int, err error) {
 			if iNdEx >= l {
 				return 0, io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -2318,7 +2540,7 @@ func skipRouter(data []byte) (n int, err error) {
 					return 0, io.ErrUnexpectedEOF
 				}
 				iNdEx++
-				if data[iNdEx-1] < 0x80 {
+				if dAtA[iNdEx-1] < 0x80 {
 					break
 				}
 			}
@@ -2335,7 +2557,7 @@ func skipRouter(data []byte) (n int, err error) {
 				if iNdEx >= l {
 					return 0, io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				length |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -2358,7 +2580,7 @@ func skipRouter(data []byte) (n int, err error) {
 					if iNdEx >= l {
 						return 0, io.ErrUnexpectedEOF
 					}
-					b := data[iNdEx]
+					b := dAtA[iNdEx]
 					iNdEx++
 					innerWire |= (uint64(b) & 0x7F) << shift
 					if b < 0x80 {
@@ -2369,7 +2591,7 @@ func skipRouter(data []byte) (n int, err error) {
 				if innerWireType == 4 {
 					break
 				}
-				next, err := skipRouter(data[start:])
+				next, err := skipRouter(dAtA[start:])
 				if err != nil {
 					return 0, err
 				}
@@ -2398,56 +2620,59 @@ func init() {
 }
 
 var fileDescriptorRouter = []byte{
-	// 815 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xa4, 0x55, 0x4f, 0x6f, 0x1b, 0x45,
-	0x14, 0x67, 0x83, 0xb4, 0x8d, 0x5f, 0xb2, 0xb1, 0x3b, 0x8d, 0xd3, 0xc5, 0xa5, 0x6e, 0xb4, 0x07,
-	0xb0, 0x04, 0x5d, 0x13, 0xa3, 0x0a, 0x15, 0x24, 0x44, 0xd2, 0x44, 0x55, 0x25, 0x5c, 0xa1, 0x75,
-	0x7a, 0x44, 0xd6, 0x78, 0xfd, 0xba, 0x59, 0xc5, 0xde, 0x59, 0x76, 0x66, 0x9d, 0xfa, 0x5b, 0xc0,
-	0x8d, 0x0f, 0xc1, 0x07, 0xe1, 0xc0, 0x81, 0x13, 0x07, 0x0e, 0x08, 0x85, 0x3b, 0x9f, 0x01, 0xed,
-	0xfc, 0x59, 0x7b, 0x1d, 0x27, 0x04, 0x7a, 0xb2, 0xe7, 0xf7, 0x7e, 0xef, 0xb7, 0xbf, 0x79, 0xf3,
-	0xe6, 0x0d, 0x7c, 0x16, 0xc5, 0xe2, 0x2c, 0x1f, 0xf9, 0x21, 0x9b, 0x76, 0x4f, 0xcf, 0xf0, 0xf4,
-	0x2c, 0x4e, 0x22, 0xfe, 0x12, 0xc5, 0x05, 0xcb, 0xce, 0xbb, 0x42, 0x24, 0x5d, 0x9a, 0xc6, 0xdd,
-	0x8c, 0xe5, 0x02, 0x33, 0xfd, 0xe3, 0xa7, 0x19, 0x13, 0x8c, 0xd8, 0x6a, 0xd5, 0x7a, 0x10, 0x31,
-	0x16, 0x4d, 0xb0, 0x2b, 0xd1, 0x51, 0xfe, 0xba, 0x8b, 0xd3, 0x54, 0xcc, 0x15, 0xa9, 0xf5, 0x78,
-	0x49, 0x3d, 0x62, 0x11, 0x5b, 0xb0, 0x8a, 0x95, 0x5c, 0xc8, 0x7f, 0x6b, 0xe8, 0xd7, 0x9a, 0xa1,
-	0x69, 0xac, 0xe9, 0x5f, 0xdc, 0x86, 0x2e, 0xa9, 0x21, 0x9b, 0x94, 0x7f, 0x74, 0xf2, 0xd3, 0xdb,
-	0x24, 0x47, 0x54, 0xe0, 0x05, 0x9d, 0x9b, 0x5f, 0x95, 0xea, 0x11, 0x68, 0x0c, 0xf2, 0x11, 0x0f,
-	0xb3, 0x78, 0x84, 0x01, 0x7e, 0x97, 0x23, 0x17, 0xde, 0x4f, 0x16, 0x38, 0xaf, 0xd2, 0x49, 0x9c,
-	0x9c, 0xf7, 0x91, 0x73, 0x1a, 0x21, 0x71, 0xe1, 0x4e, 0x4a, 0xe7, 0x13, 0x46, 0xc7, 0xae, 0xb5,
-	0x6f, 0x75, 0xb6, 0x03, 0xb3, 0x24, 0x87, 0x70, 0xd7, 0x98, 0x19, 0x4e, 0x51, 0xd0, 0x31, 0x15,
-	0xd4, 0xdd, 0xda, 0xb7, 0x3a, 0x5b, 0xbd, 0x5d, 0xbf, 0xb4, 0x19, 0xbc, 0xe9, 0xeb, 0x58, 0xd0,
-	0x30, 0xa0, 0x41, 0xc8, 0x97, 0xd0, 0xd0, 0x9e, 0x16, 0x0a, 0xdb, 0x52, 0xe1, 0x9e, 0x6f, 0xcc,
-	0x2e, 0x09, 0xd4, 0x35, 0x66, 0x00, 0xef, 0x17, 0x0b, 0xea, 0xc7, 0xec, 0x22, 0xb9, 0x9d, 0xe1,
-	0x6f, 0x60, 0xaf, 0x34, 0x1c, 0xb2, 0xe4, 0x75, 0x1c, 0xe5, 0x19, 0x15, 0x31, 0x4b, 0xb4, 0xeb,
-	0xf7, 0x16, 0xae, 0x4f, 0xdf, 0x3c, 0x5b, 0x26, 0x04, 0x4d, 0x13, 0xa9, 0xc0, 0xa4, 0x0f, 0x4d,
-	0xe3, 0xbf, 0x2a, 0xa8, 0x36, 0xe1, 0x96, 0x9b, 0x58, 0xd5, 0xdb, 0xd5, 0x81, 0x0a, 0xea, 0xfd,
-	0xb6, 0x01, 0xf7, 0x8f, 0x71, 0x16, 0x87, 0x78, 0x18, 0x8a, 0x78, 0xa6, 0xa8, 0xea, 0x64, 0x6e,
-	0xd8, 0xd6, 0x4b, 0xb8, 0x33, 0xc6, 0xd9, 0x10, 0xf3, 0x58, 0xee, 0x63, 0xfb, 0xe8, 0xc9, 0xef,
-	0x7f, 0x3c, 0x3a, 0xf8, 0xb7, 0xbe, 0x08, 0x59, 0x86, 0x5d, 0x31, 0x4f, 0x91, 0xfb, 0xc7, 0x38,
-	0x3b, 0x79, 0xf5, 0x22, 0xb0, 0xc7, 0x38, 0x3b, 0xc9, 0xe3, 0x42, 0x8f, 0xa6, 0xa9, 0xd4, 0xdb,
-	0xfe, 0x5f, 0x7a, 0x87, 0x69, 0x2a, 0xf5, 0x68, 0x9a, 0x16, 0x7a, 0x6b, 0xfb, 0xa4, 0xf9, 0xd6,
-	0x7d, 0xb2, 0xf7, 0x1f, 0xfa, 0xa4, 0x05, 0xee, 0xd5, 0xba, 0xf2, 0x94, 0x25, 0x1c, 0xbd, 0x27,
-	0xb0, 0xfb, 0x5c, 0xd1, 0x07, 0x82, 0x8a, 0x9c, 0x9b, 0x82, 0x3f, 0x04, 0x30, 0xdf, 0x8c, 0x55,
-	0xcd, 0x6b, 0x41, 0x4d, 0x23, 0x2f, 0xc6, 0xde, 0xb7, 0xd0, 0x5c, 0x49, 0x53, 0x7a, 0xe4, 0x01,
-	0xd4, 0x26, 0x94, 0x8b, 0x21, 0x47, 0x4c, 0x64, 0xda, 0xbb, 0xc1, 0x66, 0x01, 0x0c, 0x10, 0x13,
-	0xf2, 0x21, 0xd8, 0x5c, 0xd2, 0xdd, 0x0d, 0x69, 0xbf, 0x5e, 0xda, 0xd7, 0x2a, 0x3a, 0xec, 0xd5,
-	0xc1, 0xa9, 0xd8, 0xf1, 0xfe, 0xde, 0x00, 0x5b, 0x21, 0xa4, 0x03, 0x36, 0x9f, 0x73, 0x81, 0x53,
-	0x29, 0xbf, 0xd5, 0x6b, 0xf8, 0xc5, 0x30, 0x19, 0x48, 0xa8, 0xa0, 0x14, 0x2a, 0x72, 0x41, 0x0e,
-	0xa0, 0x16, 0xb2, 0x69, 0xca, 0x12, 0x4c, 0x84, 0xfe, 0xe2, 0x3d, 0x49, 0x7e, 0x66, 0x50, 0xc5,
-	0x5f, 0xb0, 0xc8, 0x01, 0xec, 0x98, 0x6d, 0x6b, 0xa7, 0xea, 0x72, 0x80, 0xcc, 0x0b, 0xa8, 0x40,
-	0x1e, 0x38, 0xd1, 0xf2, 0xce, 0x89, 0x07, 0x76, 0x2e, 0x67, 0x86, 0x6e, 0xfb, 0x65, 0xaa, 0x8e,
-	0x90, 0x0f, 0x60, 0x73, 0xac, 0x2f, 0xaa, 0xeb, 0x5c, 0x61, 0x95, 0x31, 0xf2, 0x31, 0x6c, 0xd1,
-	0xf2, 0x8c, 0xb8, 0xbb, 0x73, 0x85, 0xba, 0x1c, 0x26, 0x8f, 0x81, 0x84, 0x2c, 0x49, 0x30, 0x14,
-	0x38, 0x1e, 0x6a, 0x53, 0x5c, 0xf6, 0x96, 0x13, 0xdc, 0x2d, 0x23, 0xfa, 0x9c, 0x38, 0xf9, 0x08,
-	0x16, 0xe0, 0x70, 0x94, 0xb1, 0x73, 0xcc, 0xb8, 0xec, 0x23, 0x27, 0x68, 0x94, 0x81, 0x23, 0x85,
-	0xf7, 0xbe, 0xdf, 0x00, 0x3b, 0x90, 0x8f, 0x03, 0xf9, 0x1c, 0x9c, 0xca, 0x59, 0x93, 0xd5, 0x63,
-	0x6b, 0xed, 0xf9, 0xea, 0xfd, 0xf0, 0xcd, 0xcb, 0xe0, 0x9f, 0x14, 0xef, 0x47, 0xc7, 0x22, 0x4f,
-	0xc1, 0x56, 0x03, 0x95, 0x34, 0x7d, 0xfd, 0xf2, 0x54, 0x06, 0xec, 0x0d, 0xa9, 0x5f, 0x41, 0xad,
-	0x1c, 0xd0, 0xc4, 0x35, 0xd9, 0xab, 0x33, 0xbb, 0x75, 0xdf, 0x44, 0x56, 0x26, 0xe1, 0x27, 0x16,
-	0xe9, 0xc3, 0xa6, 0xee, 0x78, 0x24, 0x8f, 0x4a, 0xda, 0xfa, 0x09, 0xd3, 0xda, 0xbf, 0x9e, 0xa0,
-	0x5a, 0xbb, 0xf7, 0x83, 0x05, 0x8e, 0x2a, 0x49, 0x9f, 0x26, 0x34, 0xc2, 0x8c, 0x7c, 0xbd, 0x5a,
-	0x99, 0xf7, 0x8d, 0xc8, 0xba, 0x3b, 0xd5, 0x7a, 0x78, 0x4d, 0x54, 0x5f, 0x9d, 0x1e, 0xd4, 0x9e,
-	0xa3, 0xd0, 0x4a, 0x65, 0xb9, 0xaa, 0x12, 0x3b, 0x55, 0xf8, 0xa8, 0xf1, 0xf3, 0x65, 0xdb, 0xfa,
-	0xf5, 0xb2, 0x6d, 0xfd, 0x79, 0xd9, 0xb6, 0x7e, 0xfc, 0xab, 0xfd, 0xce, 0xc8, 0x96, 0x85, 0xfc,
-	0xf4, 0x9f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x78, 0xda, 0x25, 0xba, 0x14, 0x08, 0x00, 0x00,
+	// 853 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xb4, 0x56, 0xcd, 0x6f, 0xe3, 0x44,
+	0x14, 0xc7, 0x5d, 0xc9, 0x6d, 0x5e, 0xeb, 0x36, 0x9d, 0x36, 0xad, 0xc9, 0x6e, 0x3f, 0xe4, 0x03,
+	0x54, 0x2c, 0xeb, 0xd0, 0xa0, 0x15, 0x02, 0x21, 0x44, 0xbb, 0xad, 0x56, 0x2b, 0x91, 0x15, 0x72,
+	0xbb, 0x17, 0x24, 0x14, 0x4d, 0x9c, 0xb7, 0xae, 0xd5, 0xc4, 0x63, 0x3c, 0xe3, 0x74, 0xf3, 0x5f,
+	0xc0, 0x8d, 0x3f, 0x89, 0x23, 0xe2, 0x06, 0x07, 0x84, 0xca, 0x9d, 0x3b, 0x37, 0xe4, 0xf9, 0xb0,
+	0xe3, 0xb4, 0x0b, 0x15, 0xb0, 0xa7, 0x78, 0x7e, 0xef, 0xf7, 0x7e, 0x33, 0xef, 0x63, 0xe6, 0x05,
+	0x3e, 0x8a, 0x62, 0x71, 0x91, 0x0f, 0xfc, 0x90, 0x8d, 0x3b, 0xe7, 0x17, 0x78, 0x7e, 0x11, 0x27,
+	0x11, 0x7f, 0x8e, 0xe2, 0x8a, 0x65, 0x97, 0x1d, 0x21, 0x92, 0x0e, 0x4d, 0xe3, 0x4e, 0xc6, 0x72,
+	0x81, 0x99, 0xfe, 0xf1, 0xd3, 0x8c, 0x09, 0x46, 0x6c, 0xb5, 0x6a, 0xdf, 0x8f, 0x18, 0x8b, 0x46,
+	0xd8, 0x91, 0xe8, 0x20, 0x7f, 0xd9, 0xc1, 0x71, 0x2a, 0xa6, 0x8a, 0xd4, 0x7e, 0x34, 0xa3, 0x1e,
+	0xb1, 0x88, 0x55, 0xac, 0x62, 0x25, 0x17, 0xf2, 0x4b, 0xd3, 0xd7, 0xcd, 0x86, 0x34, 0x8d, 0x35,
+	0xb4, 0x67, 0x20, 0xb9, 0x0c, 0xd9, 0xa8, 0xfc, 0xd0, 0x84, 0x1d, 0x43, 0x88, 0xa8, 0xc0, 0x2b,
+	0x3a, 0x35, 0xbf, 0xca, 0xec, 0x11, 0x68, 0x9e, 0xe5, 0x03, 0x1e, 0x66, 0xf1, 0x00, 0x03, 0xfc,
+	0x26, 0x47, 0x2e, 0xbc, 0x9f, 0x2d, 0x70, 0x5e, 0xa4, 0xa3, 0x38, 0xb9, 0xec, 0x21, 0xe7, 0x34,
+	0x42, 0xe2, 0xc2, 0x62, 0x4a, 0xa7, 0x23, 0x46, 0x87, 0xae, 0xb5, 0x6f, 0x1d, 0xac, 0x04, 0x66,
+	0x49, 0x1e, 0xc2, 0xe2, 0x58, 0x91, 0xdc, 0x85, 0x7d, 0xeb, 0x60, 0xb9, 0xbb, 0xee, 0x97, 0x07,
+	0xd0, 0xde, 0x81, 0x61, 0x90, 0x23, 0x58, 0x37, 0xc6, 0xfe, 0x18, 0x05, 0x1d, 0x52, 0x41, 0xdd,
+	0x65, 0xe9, 0xb6, 0x59, 0xb9, 0x05, 0xaf, 0x7a, 0xda, 0x16, 0x34, 0x0d, 0x68, 0x10, 0xf2, 0x19,
+	0x34, 0x75, 0x00, 0x95, 0xc2, 0x8a, 0x54, 0xd8, 0xf0, 0x4d, 0x64, 0x33, 0x02, 0x6b, 0x1a, 0x33,
+	0x80, 0xf7, 0xa7, 0x05, 0x6b, 0x27, 0xec, 0x2a, 0x79, 0x03, 0xd1, 0x7d, 0x09, 0x5b, 0x65, 0x74,
+	0x21, 0x4b, 0x5e, 0xc6, 0x51, 0x9e, 0x51, 0x11, 0xb3, 0x44, 0x87, 0xf8, 0x76, 0xe5, 0x7b, 0xfe,
+	0xea, 0xc9, 0x2c, 0x21, 0x68, 0x19, 0x4b, 0x0d, 0x26, 0x3d, 0x68, 0x99, 0x60, 0xeb, 0x82, 0x2a,
+	0x62, 0xb7, 0x8c, 0x78, 0x5e, 0x6f, 0x53, 0x1b, 0x6a, 0xa8, 0xf7, 0xd3, 0x3d, 0xd8, 0x3e, 0xc1,
+	0x49, 0x1c, 0xe2, 0x51, 0x28, 0xe2, 0x89, 0xa2, 0xaa, 0x9a, 0xff, 0x5f, 0x39, 0x78, 0x0e, 0x8b,
+	0x43, 0x9c, 0xf4, 0x31, 0x8f, 0x65, 0xd0, 0x2b, 0xc7, 0x8f, 0x7f, 0xf9, 0x75, 0xef, 0xf0, 0x9f,
+	0xee, 0x50, 0xc8, 0x32, 0xec, 0x88, 0x69, 0x8a, 0xdc, 0x3f, 0xc1, 0xc9, 0xe9, 0x8b, 0x67, 0x81,
+	0x3d, 0xc4, 0xc9, 0x69, 0x1e, 0x17, 0x7a, 0x34, 0x4d, 0xa5, 0xde, 0xca, 0xbf, 0xd2, 0x3b, 0x4a,
+	0x53, 0xa9, 0x47, 0xd3, 0xb4, 0xd0, 0xbb, 0xb5, 0x03, 0x5b, 0xff, 0xb9, 0x03, 0xb7, 0xee, 0xde,
+	0x81, 0xa4, 0x07, 0x1b, 0xb4, 0x4c, 0x7f, 0x25, 0xb1, 0x2d, 0x25, 0x1e, 0x54, 0x87, 0xa8, 0x6a,
+	0x54, 0x6a, 0x11, 0x7a, 0x03, 0xf3, 0xda, 0xe0, 0xde, 0xac, 0x29, 0x4f, 0x59, 0xc2, 0xd1, 0x7b,
+	0x0c, 0x9b, 0x4f, 0xd5, 0xee, 0x67, 0x82, 0x8a, 0x9c, 0x9b, 0x62, 0xef, 0x00, 0x98, 0x10, 0x62,
+	0x55, 0xef, 0x46, 0xd0, 0xd0, 0xc8, 0xb3, 0xa1, 0xf7, 0x35, 0xb4, 0xe6, 0xdc, 0x94, 0x1e, 0xb9,
+	0x0f, 0x8d, 0x11, 0xe5, 0xa2, 0xcf, 0x11, 0x13, 0xe9, 0x76, 0x2f, 0x58, 0x2a, 0x80, 0x33, 0xc4,
+	0x84, 0xbc, 0x0b, 0x36, 0x97, 0x74, 0xdd, 0x26, 0x6b, 0x65, 0x36, 0xb4, 0x8a, 0x36, 0x7b, 0x6b,
+	0xe0, 0xd4, 0x8e, 0xe3, 0xfd, 0xb1, 0x00, 0xb6, 0x42, 0xc8, 0x01, 0xd8, 0x7c, 0xca, 0x05, 0x8e,
+	0xa5, 0xfc, 0x72, 0xb7, 0xe9, 0x17, 0x4f, 0xdd, 0x99, 0x84, 0x0a, 0x4a, 0xa1, 0x22, 0x17, 0xe4,
+	0x10, 0x1a, 0x21, 0x1b, 0xa7, 0x2c, 0xc1, 0x44, 0xe8, 0x1d, 0x37, 0x24, 0xf9, 0x89, 0x41, 0x15,
+	0xbf, 0x62, 0x91, 0x43, 0x58, 0x35, 0x61, 0xeb, 0x93, 0xaa, 0x8b, 0x09, 0xd2, 0x2f, 0xa0, 0x02,
+	0x79, 0xe0, 0x44, 0xb3, 0x91, 0x13, 0x0f, 0xec, 0x5c, 0xbe, 0x84, 0xfa, 0xca, 0xcd, 0x52, 0xb5,
+	0x85, 0xbc, 0x03, 0x4b, 0x43, 0xfd, 0xa2, 0xb8, 0xce, 0x0d, 0x56, 0x69, 0x23, 0xef, 0xc3, 0x72,
+	0x55, 0x3f, 0xee, 0xae, 0xde, 0xa0, 0xce, 0x9a, 0xc9, 0x23, 0x20, 0x21, 0x4b, 0x12, 0x0c, 0x05,
+	0x0e, 0xfb, 0xfa, 0x50, 0x5c, 0xb6, 0xaa, 0x13, 0xac, 0x97, 0x16, 0x5d, 0x27, 0x4e, 0x1e, 0x42,
+	0x05, 0xf6, 0x07, 0x19, 0xbb, 0xc4, 0x8c, 0xcb, 0xb6, 0x74, 0x82, 0x66, 0x69, 0x38, 0x56, 0x78,
+	0xf7, 0xdb, 0x05, 0xb0, 0x03, 0x39, 0x9e, 0xc8, 0x27, 0xe0, 0xd4, 0x6a, 0x4d, 0xe6, 0xcb, 0xd6,
+	0xde, 0xf2, 0xd5, 0x04, 0xf3, 0xcd, 0x6c, 0xf2, 0x4f, 0x8b, 0x09, 0x76, 0x60, 0x91, 0x8f, 0xc1,
+	0x56, 0x63, 0x82, 0xb4, 0x7c, 0x3d, 0xfb, 0x6a, 0x63, 0xe3, 0x6f, 0x5c, 0x3f, 0x87, 0x46, 0x39,
+	0x76, 0x88, 0x6b, 0xbc, 0xe7, 0x27, 0x51, 0x7b, 0xdb, 0x58, 0xe6, 0x9e, 0xec, 0x0f, 0x2c, 0xd2,
+	0x83, 0x25, 0xdd, 0xf1, 0x48, 0xf6, 0x4a, 0xda, 0xed, 0xaf, 0x5b, 0x7b, 0xff, 0xf5, 0x04, 0xd5,
+	0xda, 0xdd, 0xef, 0x2c, 0x70, 0x54, 0x4a, 0x7a, 0x34, 0xa1, 0x11, 0x66, 0xe4, 0x8b, 0xf9, 0xcc,
+	0x3c, 0x30, 0x22, 0xb7, 0xdd, 0xa9, 0xf6, 0xce, 0x6b, 0xac, 0xfa, 0xea, 0x74, 0xa1, 0xf1, 0x14,
+	0x85, 0x56, 0x2a, 0xd3, 0x55, 0x97, 0x58, 0xad, 0xc3, 0xc7, 0x9f, 0xfe, 0x70, 0xbd, 0x6b, 0xfd,
+	0x78, 0xbd, 0x6b, 0xfd, 0x76, 0xbd, 0x6b, 0x7d, 0xff, 0xfb, 0xee, 0x5b, 0x5f, 0xbd, 0x77, 0xf7,
+	0x7f, 0x23, 0x03, 0x5b, 0x26, 0xfd, 0xc3, 0xbf, 0x02, 0x00, 0x00, 0xff, 0xff, 0x43, 0x88, 0x6d,
+	0x23, 0xc2, 0x08, 0x00, 0x00,
 }

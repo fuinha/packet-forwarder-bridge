@@ -184,142 +184,142 @@ func init() {
 	proto.RegisterType((*ComponentStats_CPUStats)(nil), "api.ComponentStats.CPUStats")
 	proto.RegisterType((*ComponentStats_MemoryStats)(nil), "api.ComponentStats.MemoryStats")
 }
-func (m *Percentiles) Marshal() (data []byte, err error) {
+func (m *Percentiles) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
 	if err != nil {
 		return nil, err
 	}
-	return data[:n], nil
+	return dAtA[:n], nil
 }
 
-func (m *Percentiles) MarshalTo(data []byte) (int, error) {
+func (m *Percentiles) MarshalTo(dAtA []byte) (int, error) {
 	var i int
 	_ = i
 	var l int
 	_ = l
 	if m.Percentile1 != 0 {
-		data[i] = 0xd
+		dAtA[i] = 0xd
 		i++
-		i = encodeFixed32Api(data, i, uint32(math.Float32bits(float32(m.Percentile1))))
+		i = encodeFixed32Api(dAtA, i, uint32(math.Float32bits(float32(m.Percentile1))))
 	}
 	if m.Percentile5 != 0 {
-		data[i] = 0x15
+		dAtA[i] = 0x15
 		i++
-		i = encodeFixed32Api(data, i, uint32(math.Float32bits(float32(m.Percentile5))))
+		i = encodeFixed32Api(dAtA, i, uint32(math.Float32bits(float32(m.Percentile5))))
 	}
 	if m.Percentile10 != 0 {
-		data[i] = 0x1d
+		dAtA[i] = 0x1d
 		i++
-		i = encodeFixed32Api(data, i, uint32(math.Float32bits(float32(m.Percentile10))))
+		i = encodeFixed32Api(dAtA, i, uint32(math.Float32bits(float32(m.Percentile10))))
 	}
 	if m.Percentile25 != 0 {
-		data[i] = 0x25
+		dAtA[i] = 0x25
 		i++
-		i = encodeFixed32Api(data, i, uint32(math.Float32bits(float32(m.Percentile25))))
+		i = encodeFixed32Api(dAtA, i, uint32(math.Float32bits(float32(m.Percentile25))))
 	}
 	if m.Percentile50 != 0 {
-		data[i] = 0x2d
+		dAtA[i] = 0x2d
 		i++
-		i = encodeFixed32Api(data, i, uint32(math.Float32bits(float32(m.Percentile50))))
+		i = encodeFixed32Api(dAtA, i, uint32(math.Float32bits(float32(m.Percentile50))))
 	}
 	if m.Percentile75 != 0 {
-		data[i] = 0x35
+		dAtA[i] = 0x35
 		i++
-		i = encodeFixed32Api(data, i, uint32(math.Float32bits(float32(m.Percentile75))))
+		i = encodeFixed32Api(dAtA, i, uint32(math.Float32bits(float32(m.Percentile75))))
 	}
 	if m.Percentile90 != 0 {
-		data[i] = 0x3d
+		dAtA[i] = 0x3d
 		i++
-		i = encodeFixed32Api(data, i, uint32(math.Float32bits(float32(m.Percentile90))))
+		i = encodeFixed32Api(dAtA, i, uint32(math.Float32bits(float32(m.Percentile90))))
 	}
 	if m.Percentile95 != 0 {
-		data[i] = 0x45
+		dAtA[i] = 0x45
 		i++
-		i = encodeFixed32Api(data, i, uint32(math.Float32bits(float32(m.Percentile95))))
+		i = encodeFixed32Api(dAtA, i, uint32(math.Float32bits(float32(m.Percentile95))))
 	}
 	if m.Percentile99 != 0 {
-		data[i] = 0x4d
+		dAtA[i] = 0x4d
 		i++
-		i = encodeFixed32Api(data, i, uint32(math.Float32bits(float32(m.Percentile99))))
+		i = encodeFixed32Api(dAtA, i, uint32(math.Float32bits(float32(m.Percentile99))))
 	}
 	return i, nil
 }
 
-func (m *Rates) Marshal() (data []byte, err error) {
+func (m *Rates) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
 	if err != nil {
 		return nil, err
 	}
-	return data[:n], nil
+	return dAtA[:n], nil
 }
 
-func (m *Rates) MarshalTo(data []byte) (int, error) {
+func (m *Rates) MarshalTo(dAtA []byte) (int, error) {
 	var i int
 	_ = i
 	var l int
 	_ = l
 	if m.Rate1 != 0 {
-		data[i] = 0xd
+		dAtA[i] = 0xd
 		i++
-		i = encodeFixed32Api(data, i, uint32(math.Float32bits(float32(m.Rate1))))
+		i = encodeFixed32Api(dAtA, i, uint32(math.Float32bits(float32(m.Rate1))))
 	}
 	if m.Rate5 != 0 {
-		data[i] = 0x15
+		dAtA[i] = 0x15
 		i++
-		i = encodeFixed32Api(data, i, uint32(math.Float32bits(float32(m.Rate5))))
+		i = encodeFixed32Api(dAtA, i, uint32(math.Float32bits(float32(m.Rate5))))
 	}
 	if m.Rate15 != 0 {
-		data[i] = 0x1d
+		dAtA[i] = 0x1d
 		i++
-		i = encodeFixed32Api(data, i, uint32(math.Float32bits(float32(m.Rate15))))
+		i = encodeFixed32Api(dAtA, i, uint32(math.Float32bits(float32(m.Rate15))))
 	}
 	return i, nil
 }
 
-func (m *SystemStats) Marshal() (data []byte, err error) {
+func (m *SystemStats) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
 	if err != nil {
 		return nil, err
 	}
-	return data[:n], nil
+	return dAtA[:n], nil
 }
 
-func (m *SystemStats) MarshalTo(data []byte) (int, error) {
+func (m *SystemStats) MarshalTo(dAtA []byte) (int, error) {
 	var i int
 	_ = i
 	var l int
 	_ = l
 	if m.Load != nil {
-		data[i] = 0xa
+		dAtA[i] = 0xa
 		i++
-		i = encodeVarintApi(data, i, uint64(m.Load.Size()))
-		n1, err := m.Load.MarshalTo(data[i:])
+		i = encodeVarintApi(dAtA, i, uint64(m.Load.Size()))
+		n1, err := m.Load.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
 		i += n1
 	}
 	if m.Cpu != nil {
-		data[i] = 0x12
+		dAtA[i] = 0x12
 		i++
-		i = encodeVarintApi(data, i, uint64(m.Cpu.Size()))
-		n2, err := m.Cpu.MarshalTo(data[i:])
+		i = encodeVarintApi(dAtA, i, uint64(m.Cpu.Size()))
+		n2, err := m.Cpu.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
 		i += n2
 	}
 	if m.Memory != nil {
-		data[i] = 0x1a
+		dAtA[i] = 0x1a
 		i++
-		i = encodeVarintApi(data, i, uint64(m.Memory.Size()))
-		n3, err := m.Memory.MarshalTo(data[i:])
+		i = encodeVarintApi(dAtA, i, uint64(m.Memory.Size()))
+		n3, err := m.Memory.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
@@ -328,239 +328,239 @@ func (m *SystemStats) MarshalTo(data []byte) (int, error) {
 	return i, nil
 }
 
-func (m *SystemStats_Loadstats) Marshal() (data []byte, err error) {
+func (m *SystemStats_Loadstats) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
 	if err != nil {
 		return nil, err
 	}
-	return data[:n], nil
+	return dAtA[:n], nil
 }
 
-func (m *SystemStats_Loadstats) MarshalTo(data []byte) (int, error) {
+func (m *SystemStats_Loadstats) MarshalTo(dAtA []byte) (int, error) {
 	var i int
 	_ = i
 	var l int
 	_ = l
 	if m.Load1 != 0 {
-		data[i] = 0xd
+		dAtA[i] = 0xd
 		i++
-		i = encodeFixed32Api(data, i, uint32(math.Float32bits(float32(m.Load1))))
+		i = encodeFixed32Api(dAtA, i, uint32(math.Float32bits(float32(m.Load1))))
 	}
 	if m.Load5 != 0 {
-		data[i] = 0x15
+		dAtA[i] = 0x15
 		i++
-		i = encodeFixed32Api(data, i, uint32(math.Float32bits(float32(m.Load5))))
+		i = encodeFixed32Api(dAtA, i, uint32(math.Float32bits(float32(m.Load5))))
 	}
 	if m.Load15 != 0 {
-		data[i] = 0x1d
+		dAtA[i] = 0x1d
 		i++
-		i = encodeFixed32Api(data, i, uint32(math.Float32bits(float32(m.Load15))))
+		i = encodeFixed32Api(dAtA, i, uint32(math.Float32bits(float32(m.Load15))))
 	}
 	return i, nil
 }
 
-func (m *SystemStats_CPUStats) Marshal() (data []byte, err error) {
+func (m *SystemStats_CPUStats) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
 	if err != nil {
 		return nil, err
 	}
-	return data[:n], nil
+	return dAtA[:n], nil
 }
 
-func (m *SystemStats_CPUStats) MarshalTo(data []byte) (int, error) {
+func (m *SystemStats_CPUStats) MarshalTo(dAtA []byte) (int, error) {
 	var i int
 	_ = i
 	var l int
 	_ = l
 	if m.User != 0 {
-		data[i] = 0xd
+		dAtA[i] = 0xd
 		i++
-		i = encodeFixed32Api(data, i, uint32(math.Float32bits(float32(m.User))))
+		i = encodeFixed32Api(dAtA, i, uint32(math.Float32bits(float32(m.User))))
 	}
 	if m.System != 0 {
-		data[i] = 0x15
+		dAtA[i] = 0x15
 		i++
-		i = encodeFixed32Api(data, i, uint32(math.Float32bits(float32(m.System))))
+		i = encodeFixed32Api(dAtA, i, uint32(math.Float32bits(float32(m.System))))
 	}
 	if m.Idle != 0 {
-		data[i] = 0x1d
+		dAtA[i] = 0x1d
 		i++
-		i = encodeFixed32Api(data, i, uint32(math.Float32bits(float32(m.Idle))))
+		i = encodeFixed32Api(dAtA, i, uint32(math.Float32bits(float32(m.Idle))))
 	}
 	return i, nil
 }
 
-func (m *SystemStats_MemoryStats) Marshal() (data []byte, err error) {
+func (m *SystemStats_MemoryStats) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
 	if err != nil {
 		return nil, err
 	}
-	return data[:n], nil
+	return dAtA[:n], nil
 }
 
-func (m *SystemStats_MemoryStats) MarshalTo(data []byte) (int, error) {
+func (m *SystemStats_MemoryStats) MarshalTo(dAtA []byte) (int, error) {
 	var i int
 	_ = i
 	var l int
 	_ = l
 	if m.Total != 0 {
-		data[i] = 0x8
+		dAtA[i] = 0x8
 		i++
-		i = encodeVarintApi(data, i, uint64(m.Total))
+		i = encodeVarintApi(dAtA, i, uint64(m.Total))
 	}
 	if m.Available != 0 {
-		data[i] = 0x10
+		dAtA[i] = 0x10
 		i++
-		i = encodeVarintApi(data, i, uint64(m.Available))
+		i = encodeVarintApi(dAtA, i, uint64(m.Available))
 	}
 	if m.Used != 0 {
-		data[i] = 0x18
+		dAtA[i] = 0x18
 		i++
-		i = encodeVarintApi(data, i, uint64(m.Used))
+		i = encodeVarintApi(dAtA, i, uint64(m.Used))
 	}
 	return i, nil
 }
 
-func (m *ComponentStats) Marshal() (data []byte, err error) {
+func (m *ComponentStats) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
 	if err != nil {
 		return nil, err
 	}
-	return data[:n], nil
+	return dAtA[:n], nil
 }
 
-func (m *ComponentStats) MarshalTo(data []byte) (int, error) {
+func (m *ComponentStats) MarshalTo(dAtA []byte) (int, error) {
 	var i int
 	_ = i
 	var l int
 	_ = l
 	if m.Cpu != nil {
-		data[i] = 0xa
+		dAtA[i] = 0xa
 		i++
-		i = encodeVarintApi(data, i, uint64(m.Cpu.Size()))
-		n4, err := m.Cpu.MarshalTo(data[i:])
+		i = encodeVarintApi(dAtA, i, uint64(m.Cpu.Size()))
+		n4, err := m.Cpu.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
 		i += n4
 	}
 	if m.Memory != nil {
-		data[i] = 0x1a
+		dAtA[i] = 0x1a
 		i++
-		i = encodeVarintApi(data, i, uint64(m.Memory.Size()))
-		n5, err := m.Memory.MarshalTo(data[i:])
+		i = encodeVarintApi(dAtA, i, uint64(m.Memory.Size()))
+		n5, err := m.Memory.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
 		i += n5
 	}
 	if m.Goroutines != 0 {
-		data[i] = 0x20
+		dAtA[i] = 0x20
 		i++
-		i = encodeVarintApi(data, i, uint64(m.Goroutines))
+		i = encodeVarintApi(dAtA, i, uint64(m.Goroutines))
 	}
 	if m.GcCpuFraction != 0 {
-		data[i] = 0x2d
+		dAtA[i] = 0x2d
 		i++
-		i = encodeFixed32Api(data, i, uint32(math.Float32bits(float32(m.GcCpuFraction))))
+		i = encodeFixed32Api(dAtA, i, uint32(math.Float32bits(float32(m.GcCpuFraction))))
 	}
 	return i, nil
 }
 
-func (m *ComponentStats_CPUStats) Marshal() (data []byte, err error) {
+func (m *ComponentStats_CPUStats) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
 	if err != nil {
 		return nil, err
 	}
-	return data[:n], nil
+	return dAtA[:n], nil
 }
 
-func (m *ComponentStats_CPUStats) MarshalTo(data []byte) (int, error) {
+func (m *ComponentStats_CPUStats) MarshalTo(dAtA []byte) (int, error) {
 	var i int
 	_ = i
 	var l int
 	_ = l
 	if m.User != 0 {
-		data[i] = 0xd
+		dAtA[i] = 0xd
 		i++
-		i = encodeFixed32Api(data, i, uint32(math.Float32bits(float32(m.User))))
+		i = encodeFixed32Api(dAtA, i, uint32(math.Float32bits(float32(m.User))))
 	}
 	if m.System != 0 {
-		data[i] = 0x15
+		dAtA[i] = 0x15
 		i++
-		i = encodeFixed32Api(data, i, uint32(math.Float32bits(float32(m.System))))
+		i = encodeFixed32Api(dAtA, i, uint32(math.Float32bits(float32(m.System))))
 	}
 	if m.Idle != 0 {
-		data[i] = 0x1d
+		dAtA[i] = 0x1d
 		i++
-		i = encodeFixed32Api(data, i, uint32(math.Float32bits(float32(m.Idle))))
+		i = encodeFixed32Api(dAtA, i, uint32(math.Float32bits(float32(m.Idle))))
 	}
 	return i, nil
 }
 
-func (m *ComponentStats_MemoryStats) Marshal() (data []byte, err error) {
+func (m *ComponentStats_MemoryStats) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
 	if err != nil {
 		return nil, err
 	}
-	return data[:n], nil
+	return dAtA[:n], nil
 }
 
-func (m *ComponentStats_MemoryStats) MarshalTo(data []byte) (int, error) {
+func (m *ComponentStats_MemoryStats) MarshalTo(dAtA []byte) (int, error) {
 	var i int
 	_ = i
 	var l int
 	_ = l
 	if m.Memory != 0 {
-		data[i] = 0x8
+		dAtA[i] = 0x8
 		i++
-		i = encodeVarintApi(data, i, uint64(m.Memory))
+		i = encodeVarintApi(dAtA, i, uint64(m.Memory))
 	}
 	if m.Swap != 0 {
-		data[i] = 0x10
+		dAtA[i] = 0x10
 		i++
-		i = encodeVarintApi(data, i, uint64(m.Swap))
+		i = encodeVarintApi(dAtA, i, uint64(m.Swap))
 	}
 	return i, nil
 }
 
-func encodeFixed64Api(data []byte, offset int, v uint64) int {
-	data[offset] = uint8(v)
-	data[offset+1] = uint8(v >> 8)
-	data[offset+2] = uint8(v >> 16)
-	data[offset+3] = uint8(v >> 24)
-	data[offset+4] = uint8(v >> 32)
-	data[offset+5] = uint8(v >> 40)
-	data[offset+6] = uint8(v >> 48)
-	data[offset+7] = uint8(v >> 56)
+func encodeFixed64Api(dAtA []byte, offset int, v uint64) int {
+	dAtA[offset] = uint8(v)
+	dAtA[offset+1] = uint8(v >> 8)
+	dAtA[offset+2] = uint8(v >> 16)
+	dAtA[offset+3] = uint8(v >> 24)
+	dAtA[offset+4] = uint8(v >> 32)
+	dAtA[offset+5] = uint8(v >> 40)
+	dAtA[offset+6] = uint8(v >> 48)
+	dAtA[offset+7] = uint8(v >> 56)
 	return offset + 8
 }
-func encodeFixed32Api(data []byte, offset int, v uint32) int {
-	data[offset] = uint8(v)
-	data[offset+1] = uint8(v >> 8)
-	data[offset+2] = uint8(v >> 16)
-	data[offset+3] = uint8(v >> 24)
+func encodeFixed32Api(dAtA []byte, offset int, v uint32) int {
+	dAtA[offset] = uint8(v)
+	dAtA[offset+1] = uint8(v >> 8)
+	dAtA[offset+2] = uint8(v >> 16)
+	dAtA[offset+3] = uint8(v >> 24)
 	return offset + 4
 }
-func encodeVarintApi(data []byte, offset int, v uint64) int {
+func encodeVarintApi(dAtA []byte, offset int, v uint64) int {
 	for v >= 1<<7 {
-		data[offset] = uint8(v&0x7f | 0x80)
+		dAtA[offset] = uint8(v&0x7f | 0x80)
 		v >>= 7
 		offset++
 	}
-	data[offset] = uint8(v)
+	dAtA[offset] = uint8(v)
 	return offset + 1
 }
 func (m *Percentiles) Size() (n int) {
@@ -734,8 +734,8 @@ func sovApi(x uint64) (n int) {
 func sozApi(x uint64) (n int) {
 	return sovApi(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *Percentiles) Unmarshal(data []byte) error {
-	l := len(data)
+func (m *Percentiles) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		preIndex := iNdEx
@@ -747,7 +747,7 @@ func (m *Percentiles) Unmarshal(data []byte) error {
 			if iNdEx >= l {
 				return io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -772,10 +772,10 @@ func (m *Percentiles) Unmarshal(data []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			iNdEx += 4
-			v = uint32(data[iNdEx-4])
-			v |= uint32(data[iNdEx-3]) << 8
-			v |= uint32(data[iNdEx-2]) << 16
-			v |= uint32(data[iNdEx-1]) << 24
+			v = uint32(dAtA[iNdEx-4])
+			v |= uint32(dAtA[iNdEx-3]) << 8
+			v |= uint32(dAtA[iNdEx-2]) << 16
+			v |= uint32(dAtA[iNdEx-1]) << 24
 			m.Percentile1 = float32(math.Float32frombits(v))
 		case 2:
 			if wireType != 5 {
@@ -786,10 +786,10 @@ func (m *Percentiles) Unmarshal(data []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			iNdEx += 4
-			v = uint32(data[iNdEx-4])
-			v |= uint32(data[iNdEx-3]) << 8
-			v |= uint32(data[iNdEx-2]) << 16
-			v |= uint32(data[iNdEx-1]) << 24
+			v = uint32(dAtA[iNdEx-4])
+			v |= uint32(dAtA[iNdEx-3]) << 8
+			v |= uint32(dAtA[iNdEx-2]) << 16
+			v |= uint32(dAtA[iNdEx-1]) << 24
 			m.Percentile5 = float32(math.Float32frombits(v))
 		case 3:
 			if wireType != 5 {
@@ -800,10 +800,10 @@ func (m *Percentiles) Unmarshal(data []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			iNdEx += 4
-			v = uint32(data[iNdEx-4])
-			v |= uint32(data[iNdEx-3]) << 8
-			v |= uint32(data[iNdEx-2]) << 16
-			v |= uint32(data[iNdEx-1]) << 24
+			v = uint32(dAtA[iNdEx-4])
+			v |= uint32(dAtA[iNdEx-3]) << 8
+			v |= uint32(dAtA[iNdEx-2]) << 16
+			v |= uint32(dAtA[iNdEx-1]) << 24
 			m.Percentile10 = float32(math.Float32frombits(v))
 		case 4:
 			if wireType != 5 {
@@ -814,10 +814,10 @@ func (m *Percentiles) Unmarshal(data []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			iNdEx += 4
-			v = uint32(data[iNdEx-4])
-			v |= uint32(data[iNdEx-3]) << 8
-			v |= uint32(data[iNdEx-2]) << 16
-			v |= uint32(data[iNdEx-1]) << 24
+			v = uint32(dAtA[iNdEx-4])
+			v |= uint32(dAtA[iNdEx-3]) << 8
+			v |= uint32(dAtA[iNdEx-2]) << 16
+			v |= uint32(dAtA[iNdEx-1]) << 24
 			m.Percentile25 = float32(math.Float32frombits(v))
 		case 5:
 			if wireType != 5 {
@@ -828,10 +828,10 @@ func (m *Percentiles) Unmarshal(data []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			iNdEx += 4
-			v = uint32(data[iNdEx-4])
-			v |= uint32(data[iNdEx-3]) << 8
-			v |= uint32(data[iNdEx-2]) << 16
-			v |= uint32(data[iNdEx-1]) << 24
+			v = uint32(dAtA[iNdEx-4])
+			v |= uint32(dAtA[iNdEx-3]) << 8
+			v |= uint32(dAtA[iNdEx-2]) << 16
+			v |= uint32(dAtA[iNdEx-1]) << 24
 			m.Percentile50 = float32(math.Float32frombits(v))
 		case 6:
 			if wireType != 5 {
@@ -842,10 +842,10 @@ func (m *Percentiles) Unmarshal(data []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			iNdEx += 4
-			v = uint32(data[iNdEx-4])
-			v |= uint32(data[iNdEx-3]) << 8
-			v |= uint32(data[iNdEx-2]) << 16
-			v |= uint32(data[iNdEx-1]) << 24
+			v = uint32(dAtA[iNdEx-4])
+			v |= uint32(dAtA[iNdEx-3]) << 8
+			v |= uint32(dAtA[iNdEx-2]) << 16
+			v |= uint32(dAtA[iNdEx-1]) << 24
 			m.Percentile75 = float32(math.Float32frombits(v))
 		case 7:
 			if wireType != 5 {
@@ -856,10 +856,10 @@ func (m *Percentiles) Unmarshal(data []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			iNdEx += 4
-			v = uint32(data[iNdEx-4])
-			v |= uint32(data[iNdEx-3]) << 8
-			v |= uint32(data[iNdEx-2]) << 16
-			v |= uint32(data[iNdEx-1]) << 24
+			v = uint32(dAtA[iNdEx-4])
+			v |= uint32(dAtA[iNdEx-3]) << 8
+			v |= uint32(dAtA[iNdEx-2]) << 16
+			v |= uint32(dAtA[iNdEx-1]) << 24
 			m.Percentile90 = float32(math.Float32frombits(v))
 		case 8:
 			if wireType != 5 {
@@ -870,10 +870,10 @@ func (m *Percentiles) Unmarshal(data []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			iNdEx += 4
-			v = uint32(data[iNdEx-4])
-			v |= uint32(data[iNdEx-3]) << 8
-			v |= uint32(data[iNdEx-2]) << 16
-			v |= uint32(data[iNdEx-1]) << 24
+			v = uint32(dAtA[iNdEx-4])
+			v |= uint32(dAtA[iNdEx-3]) << 8
+			v |= uint32(dAtA[iNdEx-2]) << 16
+			v |= uint32(dAtA[iNdEx-1]) << 24
 			m.Percentile95 = float32(math.Float32frombits(v))
 		case 9:
 			if wireType != 5 {
@@ -884,14 +884,14 @@ func (m *Percentiles) Unmarshal(data []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			iNdEx += 4
-			v = uint32(data[iNdEx-4])
-			v |= uint32(data[iNdEx-3]) << 8
-			v |= uint32(data[iNdEx-2]) << 16
-			v |= uint32(data[iNdEx-1]) << 24
+			v = uint32(dAtA[iNdEx-4])
+			v |= uint32(dAtA[iNdEx-3]) << 8
+			v |= uint32(dAtA[iNdEx-2]) << 16
+			v |= uint32(dAtA[iNdEx-1]) << 24
 			m.Percentile99 = float32(math.Float32frombits(v))
 		default:
 			iNdEx = preIndex
-			skippy, err := skipApi(data[iNdEx:])
+			skippy, err := skipApi(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
@@ -910,8 +910,8 @@ func (m *Percentiles) Unmarshal(data []byte) error {
 	}
 	return nil
 }
-func (m *Rates) Unmarshal(data []byte) error {
-	l := len(data)
+func (m *Rates) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		preIndex := iNdEx
@@ -923,7 +923,7 @@ func (m *Rates) Unmarshal(data []byte) error {
 			if iNdEx >= l {
 				return io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -948,10 +948,10 @@ func (m *Rates) Unmarshal(data []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			iNdEx += 4
-			v = uint32(data[iNdEx-4])
-			v |= uint32(data[iNdEx-3]) << 8
-			v |= uint32(data[iNdEx-2]) << 16
-			v |= uint32(data[iNdEx-1]) << 24
+			v = uint32(dAtA[iNdEx-4])
+			v |= uint32(dAtA[iNdEx-3]) << 8
+			v |= uint32(dAtA[iNdEx-2]) << 16
+			v |= uint32(dAtA[iNdEx-1]) << 24
 			m.Rate1 = float32(math.Float32frombits(v))
 		case 2:
 			if wireType != 5 {
@@ -962,10 +962,10 @@ func (m *Rates) Unmarshal(data []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			iNdEx += 4
-			v = uint32(data[iNdEx-4])
-			v |= uint32(data[iNdEx-3]) << 8
-			v |= uint32(data[iNdEx-2]) << 16
-			v |= uint32(data[iNdEx-1]) << 24
+			v = uint32(dAtA[iNdEx-4])
+			v |= uint32(dAtA[iNdEx-3]) << 8
+			v |= uint32(dAtA[iNdEx-2]) << 16
+			v |= uint32(dAtA[iNdEx-1]) << 24
 			m.Rate5 = float32(math.Float32frombits(v))
 		case 3:
 			if wireType != 5 {
@@ -976,14 +976,14 @@ func (m *Rates) Unmarshal(data []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			iNdEx += 4
-			v = uint32(data[iNdEx-4])
-			v |= uint32(data[iNdEx-3]) << 8
-			v |= uint32(data[iNdEx-2]) << 16
-			v |= uint32(data[iNdEx-1]) << 24
+			v = uint32(dAtA[iNdEx-4])
+			v |= uint32(dAtA[iNdEx-3]) << 8
+			v |= uint32(dAtA[iNdEx-2]) << 16
+			v |= uint32(dAtA[iNdEx-1]) << 24
 			m.Rate15 = float32(math.Float32frombits(v))
 		default:
 			iNdEx = preIndex
-			skippy, err := skipApi(data[iNdEx:])
+			skippy, err := skipApi(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
@@ -1002,8 +1002,8 @@ func (m *Rates) Unmarshal(data []byte) error {
 	}
 	return nil
 }
-func (m *SystemStats) Unmarshal(data []byte) error {
-	l := len(data)
+func (m *SystemStats) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		preIndex := iNdEx
@@ -1015,7 +1015,7 @@ func (m *SystemStats) Unmarshal(data []byte) error {
 			if iNdEx >= l {
 				return io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -1043,7 +1043,7 @@ func (m *SystemStats) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				msglen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1060,7 +1060,7 @@ func (m *SystemStats) Unmarshal(data []byte) error {
 			if m.Load == nil {
 				m.Load = &SystemStats_Loadstats{}
 			}
-			if err := m.Load.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.Load.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -1076,7 +1076,7 @@ func (m *SystemStats) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				msglen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1093,7 +1093,7 @@ func (m *SystemStats) Unmarshal(data []byte) error {
 			if m.Cpu == nil {
 				m.Cpu = &SystemStats_CPUStats{}
 			}
-			if err := m.Cpu.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.Cpu.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -1109,7 +1109,7 @@ func (m *SystemStats) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				msglen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1126,13 +1126,13 @@ func (m *SystemStats) Unmarshal(data []byte) error {
 			if m.Memory == nil {
 				m.Memory = &SystemStats_MemoryStats{}
 			}
-			if err := m.Memory.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.Memory.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
-			skippy, err := skipApi(data[iNdEx:])
+			skippy, err := skipApi(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
@@ -1151,8 +1151,8 @@ func (m *SystemStats) Unmarshal(data []byte) error {
 	}
 	return nil
 }
-func (m *SystemStats_Loadstats) Unmarshal(data []byte) error {
-	l := len(data)
+func (m *SystemStats_Loadstats) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		preIndex := iNdEx
@@ -1164,7 +1164,7 @@ func (m *SystemStats_Loadstats) Unmarshal(data []byte) error {
 			if iNdEx >= l {
 				return io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -1189,10 +1189,10 @@ func (m *SystemStats_Loadstats) Unmarshal(data []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			iNdEx += 4
-			v = uint32(data[iNdEx-4])
-			v |= uint32(data[iNdEx-3]) << 8
-			v |= uint32(data[iNdEx-2]) << 16
-			v |= uint32(data[iNdEx-1]) << 24
+			v = uint32(dAtA[iNdEx-4])
+			v |= uint32(dAtA[iNdEx-3]) << 8
+			v |= uint32(dAtA[iNdEx-2]) << 16
+			v |= uint32(dAtA[iNdEx-1]) << 24
 			m.Load1 = float32(math.Float32frombits(v))
 		case 2:
 			if wireType != 5 {
@@ -1203,10 +1203,10 @@ func (m *SystemStats_Loadstats) Unmarshal(data []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			iNdEx += 4
-			v = uint32(data[iNdEx-4])
-			v |= uint32(data[iNdEx-3]) << 8
-			v |= uint32(data[iNdEx-2]) << 16
-			v |= uint32(data[iNdEx-1]) << 24
+			v = uint32(dAtA[iNdEx-4])
+			v |= uint32(dAtA[iNdEx-3]) << 8
+			v |= uint32(dAtA[iNdEx-2]) << 16
+			v |= uint32(dAtA[iNdEx-1]) << 24
 			m.Load5 = float32(math.Float32frombits(v))
 		case 3:
 			if wireType != 5 {
@@ -1217,14 +1217,14 @@ func (m *SystemStats_Loadstats) Unmarshal(data []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			iNdEx += 4
-			v = uint32(data[iNdEx-4])
-			v |= uint32(data[iNdEx-3]) << 8
-			v |= uint32(data[iNdEx-2]) << 16
-			v |= uint32(data[iNdEx-1]) << 24
+			v = uint32(dAtA[iNdEx-4])
+			v |= uint32(dAtA[iNdEx-3]) << 8
+			v |= uint32(dAtA[iNdEx-2]) << 16
+			v |= uint32(dAtA[iNdEx-1]) << 24
 			m.Load15 = float32(math.Float32frombits(v))
 		default:
 			iNdEx = preIndex
-			skippy, err := skipApi(data[iNdEx:])
+			skippy, err := skipApi(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
@@ -1243,8 +1243,8 @@ func (m *SystemStats_Loadstats) Unmarshal(data []byte) error {
 	}
 	return nil
 }
-func (m *SystemStats_CPUStats) Unmarshal(data []byte) error {
-	l := len(data)
+func (m *SystemStats_CPUStats) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		preIndex := iNdEx
@@ -1256,7 +1256,7 @@ func (m *SystemStats_CPUStats) Unmarshal(data []byte) error {
 			if iNdEx >= l {
 				return io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -1281,10 +1281,10 @@ func (m *SystemStats_CPUStats) Unmarshal(data []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			iNdEx += 4
-			v = uint32(data[iNdEx-4])
-			v |= uint32(data[iNdEx-3]) << 8
-			v |= uint32(data[iNdEx-2]) << 16
-			v |= uint32(data[iNdEx-1]) << 24
+			v = uint32(dAtA[iNdEx-4])
+			v |= uint32(dAtA[iNdEx-3]) << 8
+			v |= uint32(dAtA[iNdEx-2]) << 16
+			v |= uint32(dAtA[iNdEx-1]) << 24
 			m.User = float32(math.Float32frombits(v))
 		case 2:
 			if wireType != 5 {
@@ -1295,10 +1295,10 @@ func (m *SystemStats_CPUStats) Unmarshal(data []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			iNdEx += 4
-			v = uint32(data[iNdEx-4])
-			v |= uint32(data[iNdEx-3]) << 8
-			v |= uint32(data[iNdEx-2]) << 16
-			v |= uint32(data[iNdEx-1]) << 24
+			v = uint32(dAtA[iNdEx-4])
+			v |= uint32(dAtA[iNdEx-3]) << 8
+			v |= uint32(dAtA[iNdEx-2]) << 16
+			v |= uint32(dAtA[iNdEx-1]) << 24
 			m.System = float32(math.Float32frombits(v))
 		case 3:
 			if wireType != 5 {
@@ -1309,14 +1309,14 @@ func (m *SystemStats_CPUStats) Unmarshal(data []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			iNdEx += 4
-			v = uint32(data[iNdEx-4])
-			v |= uint32(data[iNdEx-3]) << 8
-			v |= uint32(data[iNdEx-2]) << 16
-			v |= uint32(data[iNdEx-1]) << 24
+			v = uint32(dAtA[iNdEx-4])
+			v |= uint32(dAtA[iNdEx-3]) << 8
+			v |= uint32(dAtA[iNdEx-2]) << 16
+			v |= uint32(dAtA[iNdEx-1]) << 24
 			m.Idle = float32(math.Float32frombits(v))
 		default:
 			iNdEx = preIndex
-			skippy, err := skipApi(data[iNdEx:])
+			skippy, err := skipApi(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
@@ -1335,8 +1335,8 @@ func (m *SystemStats_CPUStats) Unmarshal(data []byte) error {
 	}
 	return nil
 }
-func (m *SystemStats_MemoryStats) Unmarshal(data []byte) error {
-	l := len(data)
+func (m *SystemStats_MemoryStats) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		preIndex := iNdEx
@@ -1348,7 +1348,7 @@ func (m *SystemStats_MemoryStats) Unmarshal(data []byte) error {
 			if iNdEx >= l {
 				return io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -1376,7 +1376,7 @@ func (m *SystemStats_MemoryStats) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				m.Total |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1395,7 +1395,7 @@ func (m *SystemStats_MemoryStats) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				m.Available |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1414,7 +1414,7 @@ func (m *SystemStats_MemoryStats) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				m.Used |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1423,7 +1423,7 @@ func (m *SystemStats_MemoryStats) Unmarshal(data []byte) error {
 			}
 		default:
 			iNdEx = preIndex
-			skippy, err := skipApi(data[iNdEx:])
+			skippy, err := skipApi(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
@@ -1442,8 +1442,8 @@ func (m *SystemStats_MemoryStats) Unmarshal(data []byte) error {
 	}
 	return nil
 }
-func (m *ComponentStats) Unmarshal(data []byte) error {
-	l := len(data)
+func (m *ComponentStats) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		preIndex := iNdEx
@@ -1455,7 +1455,7 @@ func (m *ComponentStats) Unmarshal(data []byte) error {
 			if iNdEx >= l {
 				return io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -1483,7 +1483,7 @@ func (m *ComponentStats) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				msglen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1500,7 +1500,7 @@ func (m *ComponentStats) Unmarshal(data []byte) error {
 			if m.Cpu == nil {
 				m.Cpu = &ComponentStats_CPUStats{}
 			}
-			if err := m.Cpu.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.Cpu.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -1516,7 +1516,7 @@ func (m *ComponentStats) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				msglen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1533,7 +1533,7 @@ func (m *ComponentStats) Unmarshal(data []byte) error {
 			if m.Memory == nil {
 				m.Memory = &ComponentStats_MemoryStats{}
 			}
-			if err := m.Memory.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.Memory.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
@@ -1549,7 +1549,7 @@ func (m *ComponentStats) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				m.Goroutines |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1565,14 +1565,14 @@ func (m *ComponentStats) Unmarshal(data []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			iNdEx += 4
-			v = uint32(data[iNdEx-4])
-			v |= uint32(data[iNdEx-3]) << 8
-			v |= uint32(data[iNdEx-2]) << 16
-			v |= uint32(data[iNdEx-1]) << 24
+			v = uint32(dAtA[iNdEx-4])
+			v |= uint32(dAtA[iNdEx-3]) << 8
+			v |= uint32(dAtA[iNdEx-2]) << 16
+			v |= uint32(dAtA[iNdEx-1]) << 24
 			m.GcCpuFraction = float32(math.Float32frombits(v))
 		default:
 			iNdEx = preIndex
-			skippy, err := skipApi(data[iNdEx:])
+			skippy, err := skipApi(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
@@ -1591,8 +1591,8 @@ func (m *ComponentStats) Unmarshal(data []byte) error {
 	}
 	return nil
 }
-func (m *ComponentStats_CPUStats) Unmarshal(data []byte) error {
-	l := len(data)
+func (m *ComponentStats_CPUStats) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		preIndex := iNdEx
@@ -1604,7 +1604,7 @@ func (m *ComponentStats_CPUStats) Unmarshal(data []byte) error {
 			if iNdEx >= l {
 				return io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -1629,10 +1629,10 @@ func (m *ComponentStats_CPUStats) Unmarshal(data []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			iNdEx += 4
-			v = uint32(data[iNdEx-4])
-			v |= uint32(data[iNdEx-3]) << 8
-			v |= uint32(data[iNdEx-2]) << 16
-			v |= uint32(data[iNdEx-1]) << 24
+			v = uint32(dAtA[iNdEx-4])
+			v |= uint32(dAtA[iNdEx-3]) << 8
+			v |= uint32(dAtA[iNdEx-2]) << 16
+			v |= uint32(dAtA[iNdEx-1]) << 24
 			m.User = float32(math.Float32frombits(v))
 		case 2:
 			if wireType != 5 {
@@ -1643,10 +1643,10 @@ func (m *ComponentStats_CPUStats) Unmarshal(data []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			iNdEx += 4
-			v = uint32(data[iNdEx-4])
-			v |= uint32(data[iNdEx-3]) << 8
-			v |= uint32(data[iNdEx-2]) << 16
-			v |= uint32(data[iNdEx-1]) << 24
+			v = uint32(dAtA[iNdEx-4])
+			v |= uint32(dAtA[iNdEx-3]) << 8
+			v |= uint32(dAtA[iNdEx-2]) << 16
+			v |= uint32(dAtA[iNdEx-1]) << 24
 			m.System = float32(math.Float32frombits(v))
 		case 3:
 			if wireType != 5 {
@@ -1657,14 +1657,14 @@ func (m *ComponentStats_CPUStats) Unmarshal(data []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			iNdEx += 4
-			v = uint32(data[iNdEx-4])
-			v |= uint32(data[iNdEx-3]) << 8
-			v |= uint32(data[iNdEx-2]) << 16
-			v |= uint32(data[iNdEx-1]) << 24
+			v = uint32(dAtA[iNdEx-4])
+			v |= uint32(dAtA[iNdEx-3]) << 8
+			v |= uint32(dAtA[iNdEx-2]) << 16
+			v |= uint32(dAtA[iNdEx-1]) << 24
 			m.Idle = float32(math.Float32frombits(v))
 		default:
 			iNdEx = preIndex
-			skippy, err := skipApi(data[iNdEx:])
+			skippy, err := skipApi(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
@@ -1683,8 +1683,8 @@ func (m *ComponentStats_CPUStats) Unmarshal(data []byte) error {
 	}
 	return nil
 }
-func (m *ComponentStats_MemoryStats) Unmarshal(data []byte) error {
-	l := len(data)
+func (m *ComponentStats_MemoryStats) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		preIndex := iNdEx
@@ -1696,7 +1696,7 @@ func (m *ComponentStats_MemoryStats) Unmarshal(data []byte) error {
 			if iNdEx >= l {
 				return io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -1724,7 +1724,7 @@ func (m *ComponentStats_MemoryStats) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				m.Memory |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1743,7 +1743,7 @@ func (m *ComponentStats_MemoryStats) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				m.Swap |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1752,7 +1752,7 @@ func (m *ComponentStats_MemoryStats) Unmarshal(data []byte) error {
 			}
 		default:
 			iNdEx = preIndex
-			skippy, err := skipApi(data[iNdEx:])
+			skippy, err := skipApi(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
@@ -1771,8 +1771,8 @@ func (m *ComponentStats_MemoryStats) Unmarshal(data []byte) error {
 	}
 	return nil
 }
-func skipApi(data []byte) (n int, err error) {
-	l := len(data)
+func skipApi(dAtA []byte) (n int, err error) {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		var wire uint64
@@ -1783,7 +1783,7 @@ func skipApi(data []byte) (n int, err error) {
 			if iNdEx >= l {
 				return 0, io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -1801,7 +1801,7 @@ func skipApi(data []byte) (n int, err error) {
 					return 0, io.ErrUnexpectedEOF
 				}
 				iNdEx++
-				if data[iNdEx-1] < 0x80 {
+				if dAtA[iNdEx-1] < 0x80 {
 					break
 				}
 			}
@@ -1818,7 +1818,7 @@ func skipApi(data []byte) (n int, err error) {
 				if iNdEx >= l {
 					return 0, io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				length |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1841,7 +1841,7 @@ func skipApi(data []byte) (n int, err error) {
 					if iNdEx >= l {
 						return 0, io.ErrUnexpectedEOF
 					}
-					b := data[iNdEx]
+					b := dAtA[iNdEx]
 					iNdEx++
 					innerWire |= (uint64(b) & 0x7F) << shift
 					if b < 0x80 {
@@ -1852,7 +1852,7 @@ func skipApi(data []byte) (n int, err error) {
 				if innerWireType == 4 {
 					break
 				}
-				next, err := skipApi(data[start:])
+				next, err := skipApi(dAtA[start:])
 				if err != nil {
 					return 0, err
 				}
@@ -1879,38 +1879,39 @@ var (
 func init() { proto.RegisterFile("github.com/TheThingsNetwork/ttn/api/api.proto", fileDescriptorApi) }
 
 var fileDescriptorApi = []byte{
-	// 526 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xac, 0x94, 0xcf, 0x6e, 0xd3, 0x40,
-	0x10, 0xc6, 0x71, 0xe2, 0x84, 0x66, 0xcc, 0x3f, 0xad, 0x50, 0x65, 0xa2, 0x2a, 0x54, 0x39, 0x20,
-	0x24, 0x44, 0x12, 0x02, 0x56, 0xe4, 0x2b, 0x91, 0x38, 0xf0, 0xb7, 0x72, 0xdb, 0x73, 0xb5, 0x71,
-	0x96, 0xc4, 0xc2, 0xf6, 0x5a, 0xde, 0x35, 0x55, 0xdf, 0x83, 0x03, 0x8f, 0xd4, 0x0b, 0x12, 0x8f,
-	0x80, 0xc2, 0x8b, 0xa0, 0x1d, 0xaf, 0x8d, 0xbd, 0xe9, 0xb1, 0x87, 0x48, 0xf3, 0xcd, 0xfe, 0xf6,
-	0xf3, 0xcc, 0x67, 0x39, 0xf0, 0x72, 0x13, 0xc9, 0x6d, 0xb1, 0x9a, 0x84, 0x3c, 0x99, 0x9e, 0x6d,
-	0xd9, 0xd9, 0x36, 0x4a, 0x37, 0xe2, 0x33, 0x93, 0x97, 0x3c, 0xff, 0x36, 0x95, 0x32, 0x9d, 0xd2,
-	0x2c, 0x52, 0xbf, 0x49, 0x96, 0x73, 0xc9, 0x49, 0x97, 0x66, 0xd1, 0xf8, 0x57, 0x07, 0x9c, 0x13,
-	0x96, 0x87, 0x2c, 0x95, 0x51, 0xcc, 0x04, 0x39, 0x06, 0x27, 0xab, 0xe5, 0x2b, 0xd7, 0x3a, 0xb6,
-	0x9e, 0x77, 0x82, 0x66, 0xab, 0x4d, 0x78, 0x6e, 0xc7, 0x24, 0x3c, 0x32, 0x86, 0x7b, 0x8d, 0x0b,
-	0x33, 0xb7, 0x8b, 0x48, 0xab, 0xd7, 0x66, 0xe6, 0x9e, 0x6b, 0x9b, 0xcc, 0xdc, 0xf0, 0xf1, 0x66,
-	0x6e, 0xcf, 0x64, 0x3c, 0xc3, 0x67, 0xe1, 0xb9, 0x7d, 0x93, 0x59, 0x18, 0x3e, 0xfe, 0xcc, 0xbd,
-	0x6b, 0x32, 0xbe, 0xe1, 0xe3, 0x7b, 0xee, 0xc1, 0x1e, 0x63, 0xfa, 0xf8, 0xee, 0x60, 0x8f, 0xf1,
-	0xc7, 0x1f, 0xa0, 0x17, 0x50, 0xc9, 0x04, 0x79, 0x0c, 0xbd, 0x9c, 0xca, 0x3a, 0xc2, 0x52, 0x54,
-	0xdd, 0x2a, 0xb6, 0x52, 0x90, 0x43, 0xe8, 0xe3, 0xb1, 0xa7, 0xa3, 0xd2, 0x6a, 0xfc, 0xa3, 0x0b,
-	0xce, 0xe9, 0x95, 0x90, 0x2c, 0x39, 0x95, 0x54, 0x0a, 0x32, 0x01, 0x3b, 0xe6, 0x74, 0x8d, 0x96,
-	0xce, 0x7c, 0x38, 0x51, 0xef, 0xb2, 0x71, 0x3e, 0xf9, 0xc8, 0xe9, 0x5a, 0xa8, 0x2a, 0x40, 0x8e,
-	0xbc, 0x80, 0x6e, 0x98, 0x15, 0xf8, 0x2c, 0x67, 0xfe, 0x64, 0x0f, 0x5f, 0x9e, 0x9c, 0x63, 0x11,
-	0x28, 0x8a, 0xbc, 0x81, 0x7e, 0xc2, 0x12, 0x9e, 0x5f, 0xe1, 0x10, 0xce, 0xfc, 0x68, 0x8f, 0xff,
-	0x84, 0xc7, 0xe5, 0x15, 0xcd, 0x0e, 0xbf, 0xc0, 0xa0, 0x7e, 0xaa, 0xda, 0x4e, 0x3d, 0xb7, 0xde,
-	0x19, 0x45, 0xd5, 0xad, 0x77, 0x46, 0xa1, 0x76, 0xc6, 0xe3, 0x7a, 0xe7, 0x52, 0x0d, 0xdf, 0xc3,
-	0x41, 0x35, 0x17, 0x21, 0x60, 0x17, 0x82, 0xe5, 0xda, 0x0e, 0x6b, 0x75, 0x4f, 0xe0, 0x4c, 0xda,
-	0x4e, 0x2b, 0xc5, 0x46, 0xeb, 0x98, 0x69, 0x37, 0xac, 0x87, 0xe7, 0xe0, 0x34, 0x66, 0x56, 0x83,
-	0x48, 0x2e, 0x69, 0x8c, 0x7e, 0x76, 0x50, 0x0a, 0x72, 0x04, 0x03, 0xfa, 0x9d, 0x46, 0x31, 0x5d,
-	0xc5, 0x0c, 0x3d, 0xed, 0xe0, 0x7f, 0x43, 0x8f, 0xb0, 0x46, 0x5b, 0x1b, 0x47, 0x58, 0x8f, 0xaf,
-	0x3b, 0xf0, 0x60, 0xc9, 0x93, 0x8c, 0xa7, 0x2c, 0x95, 0xd5, 0x9b, 0xc1, 0xa4, 0xad, 0x46, 0x72,
-	0x6d, 0xc2, 0x08, 0x7b, 0x61, 0x84, 0xfd, 0xf4, 0xa6, 0x2b, 0x37, 0xe4, 0x4d, 0x46, 0x00, 0x1b,
-	0x9e, 0xf3, 0x42, 0x46, 0x29, 0x13, 0xf8, 0xd5, 0xd8, 0x41, 0xa3, 0x43, 0x9e, 0xc1, 0xc3, 0x4d,
-	0x78, 0x11, 0x66, 0xc5, 0xc5, 0xd7, 0x9c, 0x86, 0x32, 0xe2, 0xa9, 0xfe, 0x6c, 0xee, 0x6f, 0xc2,
-	0x65, 0x56, 0xbc, 0xd3, 0xcd, 0x5b, 0x8d, 0xd9, 0x6f, 0xc7, 0x7c, 0x58, 0xef, 0x56, 0xe6, 0x5c,
-	0x8d, 0x4e, 0xc0, 0x16, 0x97, 0x34, 0xd3, 0x19, 0x63, 0xfd, 0xf6, 0xd1, 0xf5, 0x6e, 0x64, 0xfd,
-	0xde, 0x8d, 0xac, 0x3f, 0xbb, 0x91, 0xf5, 0xf3, 0xef, 0xe8, 0xce, 0xaa, 0x8f, 0x7f, 0x4e, 0xaf,
-	0xff, 0x05, 0x00, 0x00, 0xff, 0xff, 0x03, 0x07, 0xe4, 0xab, 0xcd, 0x04, 0x00, 0x00,
+	// 536 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xac, 0x94, 0x5d, 0x8b, 0xd3, 0x4e,
+	0x14, 0xc6, 0xff, 0x69, 0xd3, 0xfe, 0xb7, 0x27, 0xbe, 0xc0, 0x20, 0x4b, 0x2c, 0x4b, 0x5d, 0x2a,
+	0x88, 0x20, 0xb6, 0xb5, 0x1a, 0x4a, 0x6e, 0x2d, 0x78, 0xe1, 0xeb, 0x92, 0xdd, 0xbd, 0xf1, 0x66,
+	0x99, 0xa6, 0x63, 0x1b, 0x4c, 0x32, 0x21, 0x33, 0x71, 0xd9, 0xef, 0xe1, 0x85, 0x1f, 0x69, 0x6f,
+	0x04, 0x3f, 0x82, 0xd4, 0x2f, 0x22, 0x73, 0x32, 0x89, 0xc9, 0x74, 0x2f, 0xbc, 0xf0, 0x22, 0x30,
+	0xcf, 0x99, 0xdf, 0x3c, 0x73, 0xce, 0x13, 0x12, 0x78, 0xba, 0x89, 0xe4, 0xb6, 0x58, 0x4d, 0x42,
+	0x9e, 0x4c, 0xcf, 0xb6, 0xec, 0x6c, 0x1b, 0xa5, 0x1b, 0xf1, 0x9e, 0xc9, 0x4b, 0x9e, 0x7f, 0x9e,
+	0x4a, 0x99, 0x4e, 0x69, 0x16, 0xa9, 0x67, 0x92, 0xe5, 0x5c, 0x72, 0xd2, 0xa5, 0x59, 0x34, 0xfe,
+	0xde, 0x01, 0xe7, 0x84, 0xe5, 0x21, 0x4b, 0x65, 0x14, 0x33, 0x41, 0x8e, 0xc1, 0xc9, 0x6a, 0xf9,
+	0xcc, 0xb5, 0x8e, 0xad, 0xc7, 0x9d, 0xa0, 0x59, 0x6a, 0x13, 0x9e, 0xdb, 0x31, 0x09, 0x8f, 0x8c,
+	0xe1, 0x56, 0xe3, 0xc0, 0xcc, 0xed, 0x22, 0xd2, 0xaa, 0xb5, 0x99, 0xb9, 0xe7, 0xda, 0x26, 0x33,
+	0x37, 0x7c, 0xbc, 0x99, 0xdb, 0x33, 0x19, 0xcf, 0xf0, 0x59, 0x78, 0x6e, 0xdf, 0x64, 0x16, 0x86,
+	0x8f, 0x3f, 0x73, 0xff, 0x37, 0x19, 0xdf, 0xf0, 0xf1, 0x3d, 0xf7, 0x60, 0x8f, 0x31, 0x7d, 0x7c,
+	0x77, 0xb0, 0xc7, 0xf8, 0xe3, 0x37, 0xd0, 0x0b, 0xa8, 0x64, 0x82, 0xdc, 0x83, 0x5e, 0x4e, 0x65,
+	0x1d, 0x61, 0x29, 0xaa, 0x6a, 0x15, 0x5b, 0x29, 0xc8, 0x21, 0xf4, 0x71, 0xdb, 0xd3, 0x51, 0x69,
+	0x35, 0xfe, 0xda, 0x05, 0xe7, 0xf4, 0x4a, 0x48, 0x96, 0x9c, 0x4a, 0x2a, 0x05, 0x99, 0x80, 0x1d,
+	0x73, 0xba, 0x46, 0x4b, 0x67, 0x3e, 0x9c, 0xa8, 0x77, 0xd9, 0xd8, 0x9f, 0xbc, 0xe5, 0x74, 0x2d,
+	0xd4, 0x2a, 0x40, 0x8e, 0x3c, 0x81, 0x6e, 0x98, 0x15, 0x78, 0x97, 0x33, 0xbf, 0xbf, 0x87, 0x2f,
+	0x4f, 0xce, 0x71, 0x11, 0x28, 0x8a, 0xbc, 0x80, 0x7e, 0xc2, 0x12, 0x9e, 0x5f, 0x61, 0x13, 0xce,
+	0xfc, 0x68, 0x8f, 0x7f, 0x87, 0xdb, 0xe5, 0x11, 0xcd, 0x0e, 0x3f, 0xc0, 0xa0, 0xbe, 0x55, 0x4d,
+	0xa7, 0xee, 0xad, 0x67, 0x46, 0x51, 0x55, 0xeb, 0x99, 0x51, 0xa8, 0x99, 0x71, 0xbb, 0x9e, 0xb9,
+	0x54, 0xc3, 0xd7, 0x70, 0x50, 0xf5, 0x45, 0x08, 0xd8, 0x85, 0x60, 0xb9, 0xb6, 0xc3, 0xb5, 0x3a,
+	0x27, 0xb0, 0x27, 0x6d, 0xa7, 0x95, 0x62, 0xa3, 0x75, 0xcc, 0xb4, 0x1b, 0xae, 0x87, 0xe7, 0xe0,
+	0x34, 0x7a, 0x56, 0x8d, 0x48, 0x2e, 0x69, 0x8c, 0x7e, 0x76, 0x50, 0x0a, 0x72, 0x04, 0x03, 0xfa,
+	0x85, 0x46, 0x31, 0x5d, 0xc5, 0x0c, 0x3d, 0xed, 0xe0, 0x4f, 0x41, 0xb7, 0xb0, 0x46, 0x5b, 0x1b,
+	0x5b, 0x58, 0x8f, 0xaf, 0x3b, 0x70, 0x67, 0xc9, 0x93, 0x8c, 0xa7, 0x2c, 0x95, 0xd5, 0x9b, 0xc1,
+	0xa4, 0xad, 0x46, 0x72, 0x6d, 0xc2, 0x08, 0x7b, 0x61, 0x84, 0xfd, 0xe0, 0xa6, 0x23, 0x37, 0xe4,
+	0x4d, 0x46, 0x00, 0x1b, 0x9e, 0xf3, 0x42, 0x46, 0x29, 0x13, 0xf8, 0xd5, 0xd8, 0x41, 0xa3, 0x42,
+	0x1e, 0xc1, 0xdd, 0x4d, 0x78, 0x11, 0x66, 0xc5, 0xc5, 0xa7, 0x9c, 0x86, 0x32, 0xe2, 0xa9, 0xfe,
+	0x6c, 0x6e, 0x6f, 0xc2, 0x65, 0x56, 0xbc, 0xd2, 0xc5, 0x7f, 0x1a, 0xb3, 0xdf, 0x8e, 0xf9, 0xb0,
+	0x9e, 0xad, 0xcc, 0xb9, 0x6a, 0x9d, 0x80, 0x2d, 0x2e, 0x69, 0xa6, 0x33, 0xc6, 0xf5, 0x4b, 0xef,
+	0x7a, 0x37, 0xb2, 0x7e, 0xec, 0x46, 0xd6, 0xcf, 0xdd, 0xc8, 0xfa, 0xf6, 0x6b, 0xf4, 0xdf, 0xc7,
+	0x87, 0x7f, 0xf1, 0x13, 0x5b, 0xf5, 0xf1, 0x0f, 0xf6, 0xfc, 0x77, 0x00, 0x00, 0x00, 0xff, 0xff,
+	0x9d, 0xbc, 0x69, 0xcf, 0xf2, 0x04, 0x00, 0x00,
 }

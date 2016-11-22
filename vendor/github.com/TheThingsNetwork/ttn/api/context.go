@@ -1,6 +1,6 @@
 package api
 
-import context "golang.org/x/net/context"
+import "context"
 
 func TokenFromContext(ctx context.Context) (token string, err error) {
 	md, err := MetadataFromContext(ctx)
@@ -8,6 +8,14 @@ func TokenFromContext(ctx context.Context) (token string, err error) {
 		return "", err
 	}
 	return TokenFromMetadata(md)
+}
+
+func KeyFromContext(ctx context.Context) (key string, err error) {
+	md, err := MetadataFromContext(ctx)
+	if err != nil {
+		return "", err
+	}
+	return KeyFromMetadata(md)
 }
 
 func IDFromContext(ctx context.Context) (token string, err error) {

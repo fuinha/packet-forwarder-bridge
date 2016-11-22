@@ -22,6 +22,7 @@ import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
 import google_protobuf "github.com/golang/protobuf/ptypes/empty"
+import _ "github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis/google/api"
 
 import (
 	context "golang.org/x/net/context"
@@ -41,18 +42,25 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
+// The Key indicates the metadata type
 type Metadata_Key int32
 
 const (
+	// OTHER indicates arbitrary metadata. We currently don't allow this.
 	Metadata_OTHER Metadata_Key = 0
 	// The value for PREFIX consists of 1 byte denoting the number of bits,
-	// followed by the prefix and enough trailing bits to fill 4 octets
+	// followed by the prefix and enough trailing bits to fill 4 octets.
+	// Only authorized brokers can announce PREFIX metadata.
 	Metadata_PREFIX Metadata_Key = 1
-	// APP_EUI is used for announcing join handlers.
-	// The value for APP_EUI is the byte slice of the AppEUI string
+	// APP_EUI is used for announcing join handlers. The value for APP_EUI
+	// is the byte slice of the AppEUI.
+	// Only authorized join handlers can announce APP_EUI metadata (and we
+	// don't have any of those yet).
 	Metadata_APP_EUI Metadata_Key = 2
-	// APP_ID is used for announcing regular handlers
-	// The value for APP_ID is the byte slice of the AppID string
+	// APP_ID is used for announcing that this handler is responsible for
+	// a certain AppID. The value for APP_ID is the byte slice of the AppID
+	// string. This metadata can only be added if the requesting client is
+	// authorized to manage this AppID.
 	Metadata_APP_ID Metadata_Key = 3
 )
 
@@ -74,9 +82,12 @@ func (x Metadata_Key) String() string {
 }
 func (Metadata_Key) EnumDescriptor() ([]byte, []int) { return fileDescriptorDiscovery, []int{0, 0} }
 
+// Announcements have a list of Metadata
 type Metadata struct {
-	Key   Metadata_Key `protobuf:"varint,1,opt,name=key,proto3,enum=discovery.Metadata_Key" json:"key,omitempty"`
-	Value []byte       `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
+	// The key indicates the metadata type
+	Key Metadata_Key `protobuf:"varint,1,opt,name=key,proto3,enum=discovery.Metadata_Key" json:"key,omitempty"`
+	// The value depends on the key type
+	Value []byte `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
 }
 
 func (m *Metadata) Reset()                    { *m = Metadata{} }
@@ -84,15 +95,30 @@ func (m *Metadata) String() string            { return proto.CompactTextString(m
 func (*Metadata) ProtoMessage()               {}
 func (*Metadata) Descriptor() ([]byte, []int) { return fileDescriptorDiscovery, []int{0} }
 
+// The Announcement of a service (also called component)
 type Announcement struct {
-	Id             string      `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	ServiceName    string      `protobuf:"bytes,2,opt,name=service_name,json=serviceName,proto3" json:"service_name,omitempty"`
-	ServiceVersion string      `protobuf:"bytes,3,opt,name=service_version,json=serviceVersion,proto3" json:"service_version,omitempty"`
-	Description    string      `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
-	NetAddress     string      `protobuf:"bytes,11,opt,name=net_address,json=netAddress,proto3" json:"net_address,omitempty"`
-	PublicKey      string      `protobuf:"bytes,12,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
-	Certificate    string      `protobuf:"bytes,13,opt,name=certificate,proto3" json:"certificate,omitempty"`
-	Metadata       []*Metadata `protobuf:"bytes,21,rep,name=metadata" json:"metadata,omitempty"`
+	// The ID of the component
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// The name of the component (router/broker/handler)
+	ServiceName string `protobuf:"bytes,2,opt,name=service_name,json=serviceName,proto3" json:"service_name,omitempty"`
+	// Service version in the form "[version]-[commit] ([build date])"
+	ServiceVersion string `protobuf:"bytes,3,opt,name=service_version,json=serviceVersion,proto3" json:"service_version,omitempty"`
+	// Description of the component
+	Description string `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
+	// URL with documentation or more information about this component
+	Url string `protobuf:"bytes,5,opt,name=url,proto3" json:"url,omitempty"`
+	// Indicates whether this service is part of The Things Network (the public community network)
+	Public bool `protobuf:"varint,6,opt,name=public,proto3" json:"public,omitempty"`
+	// Comma-separated network addresses in the form "[hostname]:[port]" (currently we only use the first)
+	NetAddress string `protobuf:"bytes,11,opt,name=net_address,json=netAddress,proto3" json:"net_address,omitempty"`
+	// ECDSA public key of this component
+	PublicKey string `protobuf:"bytes,12,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
+	// TLS Certificate (if TLS is enabled)
+	Certificate string `protobuf:"bytes,13,opt,name=certificate,proto3" json:"certificate,omitempty"`
+	// Contains the address where the HTTP API is exposed (if there is one)
+	ApiAddress string `protobuf:"bytes,14,opt,name=api_address,json=apiAddress,proto3" json:"api_address,omitempty"`
+	// Metadata for this component
+	Metadata []*Metadata `protobuf:"bytes,21,rep,name=metadata" json:"metadata,omitempty"`
 }
 
 func (m *Announcement) Reset()                    { *m = Announcement{} }
@@ -108,6 +134,7 @@ func (m *Announcement) GetMetadata() []*Metadata {
 }
 
 type GetAllRequest struct {
+	// The name of the service (router/broker/handler)
 	ServiceName string `protobuf:"bytes,1,opt,name=service_name,json=serviceName,proto3" json:"service_name,omitempty"`
 }
 
@@ -116,8 +143,11 @@ func (m *GetAllRequest) String() string            { return proto.CompactTextStr
 func (*GetAllRequest) ProtoMessage()               {}
 func (*GetAllRequest) Descriptor() ([]byte, []int) { return fileDescriptorDiscovery, []int{2} }
 
+// The identifier of the service that should be returned
 type GetRequest struct {
-	Id          string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// The ID of the service
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// The name of the service (router/broker/handler)
 	ServiceName string `protobuf:"bytes,2,opt,name=service_name,json=serviceName,proto3" json:"service_name,omitempty"`
 }
 
@@ -126,8 +156,11 @@ func (m *GetRequest) String() string            { return proto.CompactTextString
 func (*GetRequest) ProtoMessage()               {}
 func (*GetRequest) Descriptor() ([]byte, []int) { return fileDescriptorDiscovery, []int{3} }
 
+// The metadata to add or remove from an announement
 type MetadataRequest struct {
-	Id          string    `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// The ID of the service that should be modified
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// The name of the service (router/broker/handler) that should be modified
 	ServiceName string    `protobuf:"bytes,2,opt,name=service_name,json=serviceName,proto3" json:"service_name,omitempty"`
 	Metadata    *Metadata `protobuf:"bytes,11,opt,name=metadata" json:"metadata,omitempty"`
 }
@@ -144,6 +177,7 @@ func (m *MetadataRequest) GetMetadata() *Metadata {
 	return nil
 }
 
+// A list of announcements
 type AnnouncementsResponse struct {
 	Services []*Announcement `protobuf:"bytes,1,rep,name=services" json:"services,omitempty"`
 }
@@ -176,15 +210,20 @@ var _ grpc.ClientConn
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion3
+const _ = grpc.SupportPackageIsVersion4
 
 // Client API for Discovery service
 
 type DiscoveryClient interface {
+	// Announce your component to the Discovery server
 	Announce(ctx context.Context, in *Announcement, opts ...grpc.CallOption) (*google_protobuf.Empty, error)
+	// Get all announcements for a specific service
 	GetAll(ctx context.Context, in *GetAllRequest, opts ...grpc.CallOption) (*AnnouncementsResponse, error)
+	// Get a specific announcement
 	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*Announcement, error)
+	// Add metadata to an announement
 	AddMetadata(ctx context.Context, in *MetadataRequest, opts ...grpc.CallOption) (*google_protobuf.Empty, error)
+	// Delete metadata from an announcement
 	DeleteMetadata(ctx context.Context, in *MetadataRequest, opts ...grpc.CallOption) (*google_protobuf.Empty, error)
 }
 
@@ -244,10 +283,15 @@ func (c *discoveryClient) DeleteMetadata(ctx context.Context, in *MetadataReques
 // Server API for Discovery service
 
 type DiscoveryServer interface {
+	// Announce your component to the Discovery server
 	Announce(context.Context, *Announcement) (*google_protobuf.Empty, error)
+	// Get all announcements for a specific service
 	GetAll(context.Context, *GetAllRequest) (*AnnouncementsResponse, error)
+	// Get a specific announcement
 	Get(context.Context, *GetRequest) (*Announcement, error)
+	// Add metadata to an announement
 	AddMetadata(context.Context, *MetadataRequest) (*google_protobuf.Empty, error)
+	// Delete metadata from an announcement
 	DeleteMetadata(context.Context, *MetadataRequest) (*google_protobuf.Empty, error)
 }
 
@@ -371,7 +415,7 @@ var _Discovery_serviceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: fileDescriptorDiscovery,
+	Metadata: "github.com/TheThingsNetwork/ttn/api/discovery/discovery.proto",
 }
 
 // Client API for DiscoveryManager service
@@ -401,103 +445,125 @@ var _DiscoveryManager_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*DiscoveryManagerServer)(nil),
 	Methods:     []grpc.MethodDesc{},
 	Streams:     []grpc.StreamDesc{},
-	Metadata:    fileDescriptorDiscovery,
+	Metadata:    "github.com/TheThingsNetwork/ttn/api/discovery/discovery.proto",
 }
 
-func (m *Metadata) Marshal() (data []byte, err error) {
+func (m *Metadata) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
 	if err != nil {
 		return nil, err
 	}
-	return data[:n], nil
+	return dAtA[:n], nil
 }
 
-func (m *Metadata) MarshalTo(data []byte) (int, error) {
+func (m *Metadata) MarshalTo(dAtA []byte) (int, error) {
 	var i int
 	_ = i
 	var l int
 	_ = l
 	if m.Key != 0 {
-		data[i] = 0x8
+		dAtA[i] = 0x8
 		i++
-		i = encodeVarintDiscovery(data, i, uint64(m.Key))
+		i = encodeVarintDiscovery(dAtA, i, uint64(m.Key))
 	}
 	if len(m.Value) > 0 {
-		data[i] = 0x12
+		dAtA[i] = 0x12
 		i++
-		i = encodeVarintDiscovery(data, i, uint64(len(m.Value)))
-		i += copy(data[i:], m.Value)
+		i = encodeVarintDiscovery(dAtA, i, uint64(len(m.Value)))
+		i += copy(dAtA[i:], m.Value)
 	}
 	return i, nil
 }
 
-func (m *Announcement) Marshal() (data []byte, err error) {
+func (m *Announcement) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
 	if err != nil {
 		return nil, err
 	}
-	return data[:n], nil
+	return dAtA[:n], nil
 }
 
-func (m *Announcement) MarshalTo(data []byte) (int, error) {
+func (m *Announcement) MarshalTo(dAtA []byte) (int, error) {
 	var i int
 	_ = i
 	var l int
 	_ = l
 	if len(m.Id) > 0 {
-		data[i] = 0xa
+		dAtA[i] = 0xa
 		i++
-		i = encodeVarintDiscovery(data, i, uint64(len(m.Id)))
-		i += copy(data[i:], m.Id)
+		i = encodeVarintDiscovery(dAtA, i, uint64(len(m.Id)))
+		i += copy(dAtA[i:], m.Id)
 	}
 	if len(m.ServiceName) > 0 {
-		data[i] = 0x12
+		dAtA[i] = 0x12
 		i++
-		i = encodeVarintDiscovery(data, i, uint64(len(m.ServiceName)))
-		i += copy(data[i:], m.ServiceName)
+		i = encodeVarintDiscovery(dAtA, i, uint64(len(m.ServiceName)))
+		i += copy(dAtA[i:], m.ServiceName)
 	}
 	if len(m.ServiceVersion) > 0 {
-		data[i] = 0x1a
+		dAtA[i] = 0x1a
 		i++
-		i = encodeVarintDiscovery(data, i, uint64(len(m.ServiceVersion)))
-		i += copy(data[i:], m.ServiceVersion)
+		i = encodeVarintDiscovery(dAtA, i, uint64(len(m.ServiceVersion)))
+		i += copy(dAtA[i:], m.ServiceVersion)
 	}
 	if len(m.Description) > 0 {
-		data[i] = 0x22
+		dAtA[i] = 0x22
 		i++
-		i = encodeVarintDiscovery(data, i, uint64(len(m.Description)))
-		i += copy(data[i:], m.Description)
+		i = encodeVarintDiscovery(dAtA, i, uint64(len(m.Description)))
+		i += copy(dAtA[i:], m.Description)
+	}
+	if len(m.Url) > 0 {
+		dAtA[i] = 0x2a
+		i++
+		i = encodeVarintDiscovery(dAtA, i, uint64(len(m.Url)))
+		i += copy(dAtA[i:], m.Url)
+	}
+	if m.Public {
+		dAtA[i] = 0x30
+		i++
+		if m.Public {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i++
 	}
 	if len(m.NetAddress) > 0 {
-		data[i] = 0x5a
+		dAtA[i] = 0x5a
 		i++
-		i = encodeVarintDiscovery(data, i, uint64(len(m.NetAddress)))
-		i += copy(data[i:], m.NetAddress)
+		i = encodeVarintDiscovery(dAtA, i, uint64(len(m.NetAddress)))
+		i += copy(dAtA[i:], m.NetAddress)
 	}
 	if len(m.PublicKey) > 0 {
-		data[i] = 0x62
+		dAtA[i] = 0x62
 		i++
-		i = encodeVarintDiscovery(data, i, uint64(len(m.PublicKey)))
-		i += copy(data[i:], m.PublicKey)
+		i = encodeVarintDiscovery(dAtA, i, uint64(len(m.PublicKey)))
+		i += copy(dAtA[i:], m.PublicKey)
 	}
 	if len(m.Certificate) > 0 {
-		data[i] = 0x6a
+		dAtA[i] = 0x6a
 		i++
-		i = encodeVarintDiscovery(data, i, uint64(len(m.Certificate)))
-		i += copy(data[i:], m.Certificate)
+		i = encodeVarintDiscovery(dAtA, i, uint64(len(m.Certificate)))
+		i += copy(dAtA[i:], m.Certificate)
+	}
+	if len(m.ApiAddress) > 0 {
+		dAtA[i] = 0x72
+		i++
+		i = encodeVarintDiscovery(dAtA, i, uint64(len(m.ApiAddress)))
+		i += copy(dAtA[i:], m.ApiAddress)
 	}
 	if len(m.Metadata) > 0 {
 		for _, msg := range m.Metadata {
-			data[i] = 0xaa
+			dAtA[i] = 0xaa
 			i++
-			data[i] = 0x1
+			dAtA[i] = 0x1
 			i++
-			i = encodeVarintDiscovery(data, i, uint64(msg.Size()))
-			n, err := msg.MarshalTo(data[i:])
+			i = encodeVarintDiscovery(dAtA, i, uint64(msg.Size()))
+			n, err := msg.MarshalTo(dAtA[i:])
 			if err != nil {
 				return 0, err
 			}
@@ -507,92 +573,92 @@ func (m *Announcement) MarshalTo(data []byte) (int, error) {
 	return i, nil
 }
 
-func (m *GetAllRequest) Marshal() (data []byte, err error) {
+func (m *GetAllRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
 	if err != nil {
 		return nil, err
 	}
-	return data[:n], nil
+	return dAtA[:n], nil
 }
 
-func (m *GetAllRequest) MarshalTo(data []byte) (int, error) {
+func (m *GetAllRequest) MarshalTo(dAtA []byte) (int, error) {
 	var i int
 	_ = i
 	var l int
 	_ = l
 	if len(m.ServiceName) > 0 {
-		data[i] = 0xa
+		dAtA[i] = 0xa
 		i++
-		i = encodeVarintDiscovery(data, i, uint64(len(m.ServiceName)))
-		i += copy(data[i:], m.ServiceName)
+		i = encodeVarintDiscovery(dAtA, i, uint64(len(m.ServiceName)))
+		i += copy(dAtA[i:], m.ServiceName)
 	}
 	return i, nil
 }
 
-func (m *GetRequest) Marshal() (data []byte, err error) {
+func (m *GetRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
 	if err != nil {
 		return nil, err
 	}
-	return data[:n], nil
+	return dAtA[:n], nil
 }
 
-func (m *GetRequest) MarshalTo(data []byte) (int, error) {
+func (m *GetRequest) MarshalTo(dAtA []byte) (int, error) {
 	var i int
 	_ = i
 	var l int
 	_ = l
 	if len(m.Id) > 0 {
-		data[i] = 0xa
+		dAtA[i] = 0xa
 		i++
-		i = encodeVarintDiscovery(data, i, uint64(len(m.Id)))
-		i += copy(data[i:], m.Id)
+		i = encodeVarintDiscovery(dAtA, i, uint64(len(m.Id)))
+		i += copy(dAtA[i:], m.Id)
 	}
 	if len(m.ServiceName) > 0 {
-		data[i] = 0x12
+		dAtA[i] = 0x12
 		i++
-		i = encodeVarintDiscovery(data, i, uint64(len(m.ServiceName)))
-		i += copy(data[i:], m.ServiceName)
+		i = encodeVarintDiscovery(dAtA, i, uint64(len(m.ServiceName)))
+		i += copy(dAtA[i:], m.ServiceName)
 	}
 	return i, nil
 }
 
-func (m *MetadataRequest) Marshal() (data []byte, err error) {
+func (m *MetadataRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
 	if err != nil {
 		return nil, err
 	}
-	return data[:n], nil
+	return dAtA[:n], nil
 }
 
-func (m *MetadataRequest) MarshalTo(data []byte) (int, error) {
+func (m *MetadataRequest) MarshalTo(dAtA []byte) (int, error) {
 	var i int
 	_ = i
 	var l int
 	_ = l
 	if len(m.Id) > 0 {
-		data[i] = 0xa
+		dAtA[i] = 0xa
 		i++
-		i = encodeVarintDiscovery(data, i, uint64(len(m.Id)))
-		i += copy(data[i:], m.Id)
+		i = encodeVarintDiscovery(dAtA, i, uint64(len(m.Id)))
+		i += copy(dAtA[i:], m.Id)
 	}
 	if len(m.ServiceName) > 0 {
-		data[i] = 0x12
+		dAtA[i] = 0x12
 		i++
-		i = encodeVarintDiscovery(data, i, uint64(len(m.ServiceName)))
-		i += copy(data[i:], m.ServiceName)
+		i = encodeVarintDiscovery(dAtA, i, uint64(len(m.ServiceName)))
+		i += copy(dAtA[i:], m.ServiceName)
 	}
 	if m.Metadata != nil {
-		data[i] = 0x5a
+		dAtA[i] = 0x5a
 		i++
-		i = encodeVarintDiscovery(data, i, uint64(m.Metadata.Size()))
-		n1, err := m.Metadata.MarshalTo(data[i:])
+		i = encodeVarintDiscovery(dAtA, i, uint64(m.Metadata.Size()))
+		n1, err := m.Metadata.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
@@ -601,27 +667,27 @@ func (m *MetadataRequest) MarshalTo(data []byte) (int, error) {
 	return i, nil
 }
 
-func (m *AnnouncementsResponse) Marshal() (data []byte, err error) {
+func (m *AnnouncementsResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
-	data = make([]byte, size)
-	n, err := m.MarshalTo(data)
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
 	if err != nil {
 		return nil, err
 	}
-	return data[:n], nil
+	return dAtA[:n], nil
 }
 
-func (m *AnnouncementsResponse) MarshalTo(data []byte) (int, error) {
+func (m *AnnouncementsResponse) MarshalTo(dAtA []byte) (int, error) {
 	var i int
 	_ = i
 	var l int
 	_ = l
 	if len(m.Services) > 0 {
 		for _, msg := range m.Services {
-			data[i] = 0xa
+			dAtA[i] = 0xa
 			i++
-			i = encodeVarintDiscovery(data, i, uint64(msg.Size()))
-			n, err := msg.MarshalTo(data[i:])
+			i = encodeVarintDiscovery(dAtA, i, uint64(msg.Size()))
+			n, err := msg.MarshalTo(dAtA[i:])
 			if err != nil {
 				return 0, err
 			}
@@ -631,31 +697,31 @@ func (m *AnnouncementsResponse) MarshalTo(data []byte) (int, error) {
 	return i, nil
 }
 
-func encodeFixed64Discovery(data []byte, offset int, v uint64) int {
-	data[offset] = uint8(v)
-	data[offset+1] = uint8(v >> 8)
-	data[offset+2] = uint8(v >> 16)
-	data[offset+3] = uint8(v >> 24)
-	data[offset+4] = uint8(v >> 32)
-	data[offset+5] = uint8(v >> 40)
-	data[offset+6] = uint8(v >> 48)
-	data[offset+7] = uint8(v >> 56)
+func encodeFixed64Discovery(dAtA []byte, offset int, v uint64) int {
+	dAtA[offset] = uint8(v)
+	dAtA[offset+1] = uint8(v >> 8)
+	dAtA[offset+2] = uint8(v >> 16)
+	dAtA[offset+3] = uint8(v >> 24)
+	dAtA[offset+4] = uint8(v >> 32)
+	dAtA[offset+5] = uint8(v >> 40)
+	dAtA[offset+6] = uint8(v >> 48)
+	dAtA[offset+7] = uint8(v >> 56)
 	return offset + 8
 }
-func encodeFixed32Discovery(data []byte, offset int, v uint32) int {
-	data[offset] = uint8(v)
-	data[offset+1] = uint8(v >> 8)
-	data[offset+2] = uint8(v >> 16)
-	data[offset+3] = uint8(v >> 24)
+func encodeFixed32Discovery(dAtA []byte, offset int, v uint32) int {
+	dAtA[offset] = uint8(v)
+	dAtA[offset+1] = uint8(v >> 8)
+	dAtA[offset+2] = uint8(v >> 16)
+	dAtA[offset+3] = uint8(v >> 24)
 	return offset + 4
 }
-func encodeVarintDiscovery(data []byte, offset int, v uint64) int {
+func encodeVarintDiscovery(dAtA []byte, offset int, v uint64) int {
 	for v >= 1<<7 {
-		data[offset] = uint8(v&0x7f | 0x80)
+		dAtA[offset] = uint8(v&0x7f | 0x80)
 		v >>= 7
 		offset++
 	}
-	data[offset] = uint8(v)
+	dAtA[offset] = uint8(v)
 	return offset + 1
 }
 func (m *Metadata) Size() (n int) {
@@ -690,6 +756,13 @@ func (m *Announcement) Size() (n int) {
 	if l > 0 {
 		n += 1 + l + sovDiscovery(uint64(l))
 	}
+	l = len(m.Url)
+	if l > 0 {
+		n += 1 + l + sovDiscovery(uint64(l))
+	}
+	if m.Public {
+		n += 2
+	}
 	l = len(m.NetAddress)
 	if l > 0 {
 		n += 1 + l + sovDiscovery(uint64(l))
@@ -699,6 +772,10 @@ func (m *Announcement) Size() (n int) {
 		n += 1 + l + sovDiscovery(uint64(l))
 	}
 	l = len(m.Certificate)
+	if l > 0 {
+		n += 1 + l + sovDiscovery(uint64(l))
+	}
+	l = len(m.ApiAddress)
 	if l > 0 {
 		n += 1 + l + sovDiscovery(uint64(l))
 	}
@@ -778,8 +855,8 @@ func sovDiscovery(x uint64) (n int) {
 func sozDiscovery(x uint64) (n int) {
 	return sovDiscovery(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *Metadata) Unmarshal(data []byte) error {
-	l := len(data)
+func (m *Metadata) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		preIndex := iNdEx
@@ -791,7 +868,7 @@ func (m *Metadata) Unmarshal(data []byte) error {
 			if iNdEx >= l {
 				return io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -819,7 +896,7 @@ func (m *Metadata) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				m.Key |= (Metadata_Key(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -838,7 +915,7 @@ func (m *Metadata) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				byteLen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -852,14 +929,14 @@ func (m *Metadata) Unmarshal(data []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Value = append(m.Value[:0], data[iNdEx:postIndex]...)
+			m.Value = append(m.Value[:0], dAtA[iNdEx:postIndex]...)
 			if m.Value == nil {
 				m.Value = []byte{}
 			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
-			skippy, err := skipDiscovery(data[iNdEx:])
+			skippy, err := skipDiscovery(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
@@ -878,8 +955,8 @@ func (m *Metadata) Unmarshal(data []byte) error {
 	}
 	return nil
 }
-func (m *Announcement) Unmarshal(data []byte) error {
-	l := len(data)
+func (m *Announcement) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		preIndex := iNdEx
@@ -891,7 +968,7 @@ func (m *Announcement) Unmarshal(data []byte) error {
 			if iNdEx >= l {
 				return io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -919,7 +996,7 @@ func (m *Announcement) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				stringLen |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -934,7 +1011,7 @@ func (m *Announcement) Unmarshal(data []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Id = string(data[iNdEx:postIndex])
+			m.Id = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
@@ -948,7 +1025,7 @@ func (m *Announcement) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				stringLen |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -963,7 +1040,7 @@ func (m *Announcement) Unmarshal(data []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.ServiceName = string(data[iNdEx:postIndex])
+			m.ServiceName = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 3:
 			if wireType != 2 {
@@ -977,7 +1054,7 @@ func (m *Announcement) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				stringLen |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -992,7 +1069,7 @@ func (m *Announcement) Unmarshal(data []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.ServiceVersion = string(data[iNdEx:postIndex])
+			m.ServiceVersion = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 4:
 			if wireType != 2 {
@@ -1006,7 +1083,7 @@ func (m *Announcement) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				stringLen |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1021,8 +1098,57 @@ func (m *Announcement) Unmarshal(data []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Description = string(data[iNdEx:postIndex])
+			m.Description = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Url", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowDiscovery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthDiscovery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Url = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 6:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Public", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowDiscovery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.Public = bool(v != 0)
 		case 11:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field NetAddress", wireType)
@@ -1035,7 +1161,7 @@ func (m *Announcement) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				stringLen |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1050,7 +1176,7 @@ func (m *Announcement) Unmarshal(data []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.NetAddress = string(data[iNdEx:postIndex])
+			m.NetAddress = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 12:
 			if wireType != 2 {
@@ -1064,7 +1190,7 @@ func (m *Announcement) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				stringLen |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1079,7 +1205,7 @@ func (m *Announcement) Unmarshal(data []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.PublicKey = string(data[iNdEx:postIndex])
+			m.PublicKey = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 13:
 			if wireType != 2 {
@@ -1093,7 +1219,7 @@ func (m *Announcement) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				stringLen |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1108,7 +1234,36 @@ func (m *Announcement) Unmarshal(data []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Certificate = string(data[iNdEx:postIndex])
+			m.Certificate = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 14:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ApiAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowDiscovery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthDiscovery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ApiAddress = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 21:
 			if wireType != 2 {
@@ -1122,7 +1277,7 @@ func (m *Announcement) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				msglen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1137,13 +1292,13 @@ func (m *Announcement) Unmarshal(data []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Metadata = append(m.Metadata, &Metadata{})
-			if err := m.Metadata[len(m.Metadata)-1].Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.Metadata[len(m.Metadata)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
-			skippy, err := skipDiscovery(data[iNdEx:])
+			skippy, err := skipDiscovery(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
@@ -1162,8 +1317,8 @@ func (m *Announcement) Unmarshal(data []byte) error {
 	}
 	return nil
 }
-func (m *GetAllRequest) Unmarshal(data []byte) error {
-	l := len(data)
+func (m *GetAllRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		preIndex := iNdEx
@@ -1175,7 +1330,7 @@ func (m *GetAllRequest) Unmarshal(data []byte) error {
 			if iNdEx >= l {
 				return io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -1203,7 +1358,7 @@ func (m *GetAllRequest) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				stringLen |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1218,11 +1373,11 @@ func (m *GetAllRequest) Unmarshal(data []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.ServiceName = string(data[iNdEx:postIndex])
+			m.ServiceName = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
-			skippy, err := skipDiscovery(data[iNdEx:])
+			skippy, err := skipDiscovery(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
@@ -1241,8 +1396,8 @@ func (m *GetAllRequest) Unmarshal(data []byte) error {
 	}
 	return nil
 }
-func (m *GetRequest) Unmarshal(data []byte) error {
-	l := len(data)
+func (m *GetRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		preIndex := iNdEx
@@ -1254,7 +1409,7 @@ func (m *GetRequest) Unmarshal(data []byte) error {
 			if iNdEx >= l {
 				return io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -1282,7 +1437,7 @@ func (m *GetRequest) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				stringLen |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1297,7 +1452,7 @@ func (m *GetRequest) Unmarshal(data []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Id = string(data[iNdEx:postIndex])
+			m.Id = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
@@ -1311,7 +1466,7 @@ func (m *GetRequest) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				stringLen |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1326,11 +1481,11 @@ func (m *GetRequest) Unmarshal(data []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.ServiceName = string(data[iNdEx:postIndex])
+			m.ServiceName = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
-			skippy, err := skipDiscovery(data[iNdEx:])
+			skippy, err := skipDiscovery(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
@@ -1349,8 +1504,8 @@ func (m *GetRequest) Unmarshal(data []byte) error {
 	}
 	return nil
 }
-func (m *MetadataRequest) Unmarshal(data []byte) error {
-	l := len(data)
+func (m *MetadataRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		preIndex := iNdEx
@@ -1362,7 +1517,7 @@ func (m *MetadataRequest) Unmarshal(data []byte) error {
 			if iNdEx >= l {
 				return io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -1390,7 +1545,7 @@ func (m *MetadataRequest) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				stringLen |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1405,7 +1560,7 @@ func (m *MetadataRequest) Unmarshal(data []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Id = string(data[iNdEx:postIndex])
+			m.Id = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
 			if wireType != 2 {
@@ -1419,7 +1574,7 @@ func (m *MetadataRequest) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				stringLen |= (uint64(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1434,7 +1589,7 @@ func (m *MetadataRequest) Unmarshal(data []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.ServiceName = string(data[iNdEx:postIndex])
+			m.ServiceName = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 11:
 			if wireType != 2 {
@@ -1448,7 +1603,7 @@ func (m *MetadataRequest) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				msglen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1465,13 +1620,13 @@ func (m *MetadataRequest) Unmarshal(data []byte) error {
 			if m.Metadata == nil {
 				m.Metadata = &Metadata{}
 			}
-			if err := m.Metadata.Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.Metadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
-			skippy, err := skipDiscovery(data[iNdEx:])
+			skippy, err := skipDiscovery(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
@@ -1490,8 +1645,8 @@ func (m *MetadataRequest) Unmarshal(data []byte) error {
 	}
 	return nil
 }
-func (m *AnnouncementsResponse) Unmarshal(data []byte) error {
-	l := len(data)
+func (m *AnnouncementsResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		preIndex := iNdEx
@@ -1503,7 +1658,7 @@ func (m *AnnouncementsResponse) Unmarshal(data []byte) error {
 			if iNdEx >= l {
 				return io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -1531,7 +1686,7 @@ func (m *AnnouncementsResponse) Unmarshal(data []byte) error {
 				if iNdEx >= l {
 					return io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				msglen |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1546,13 +1701,13 @@ func (m *AnnouncementsResponse) Unmarshal(data []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Services = append(m.Services, &Announcement{})
-			if err := m.Services[len(m.Services)-1].Unmarshal(data[iNdEx:postIndex]); err != nil {
+			if err := m.Services[len(m.Services)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
-			skippy, err := skipDiscovery(data[iNdEx:])
+			skippy, err := skipDiscovery(dAtA[iNdEx:])
 			if err != nil {
 				return err
 			}
@@ -1571,8 +1726,8 @@ func (m *AnnouncementsResponse) Unmarshal(data []byte) error {
 	}
 	return nil
 }
-func skipDiscovery(data []byte) (n int, err error) {
-	l := len(data)
+func skipDiscovery(dAtA []byte) (n int, err error) {
+	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
 		var wire uint64
@@ -1583,7 +1738,7 @@ func skipDiscovery(data []byte) (n int, err error) {
 			if iNdEx >= l {
 				return 0, io.ErrUnexpectedEOF
 			}
-			b := data[iNdEx]
+			b := dAtA[iNdEx]
 			iNdEx++
 			wire |= (uint64(b) & 0x7F) << shift
 			if b < 0x80 {
@@ -1601,7 +1756,7 @@ func skipDiscovery(data []byte) (n int, err error) {
 					return 0, io.ErrUnexpectedEOF
 				}
 				iNdEx++
-				if data[iNdEx-1] < 0x80 {
+				if dAtA[iNdEx-1] < 0x80 {
 					break
 				}
 			}
@@ -1618,7 +1773,7 @@ func skipDiscovery(data []byte) (n int, err error) {
 				if iNdEx >= l {
 					return 0, io.ErrUnexpectedEOF
 				}
-				b := data[iNdEx]
+				b := dAtA[iNdEx]
 				iNdEx++
 				length |= (int(b) & 0x7F) << shift
 				if b < 0x80 {
@@ -1641,7 +1796,7 @@ func skipDiscovery(data []byte) (n int, err error) {
 					if iNdEx >= l {
 						return 0, io.ErrUnexpectedEOF
 					}
-					b := data[iNdEx]
+					b := dAtA[iNdEx]
 					iNdEx++
 					innerWire |= (uint64(b) & 0x7F) << shift
 					if b < 0x80 {
@@ -1652,7 +1807,7 @@ func skipDiscovery(data []byte) (n int, err error) {
 				if innerWireType == 4 {
 					break
 				}
-				next, err := skipDiscovery(data[start:])
+				next, err := skipDiscovery(dAtA[start:])
 				if err != nil {
 					return 0, err
 				}
@@ -1681,41 +1836,47 @@ func init() {
 }
 
 var fileDescriptorDiscovery = []byte{
-	// 566 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xa4, 0x53, 0x4d, 0x6f, 0xd3, 0x40,
-	0x10, 0xad, 0x13, 0x5a, 0xe2, 0x71, 0x9a, 0x5a, 0x0b, 0x05, 0x2b, 0x88, 0x60, 0x7c, 0xa1, 0x5c,
-	0x6c, 0x29, 0x55, 0x4f, 0x08, 0x21, 0xa3, 0x84, 0x52, 0x95, 0x96, 0xca, 0x2a, 0x88, 0x5b, 0xe4,
-	0xd8, 0xd3, 0x74, 0x55, 0x7b, 0x6d, 0xbc, 0xeb, 0xa0, 0x5c, 0xf9, 0x15, 0xdc, 0xf8, 0x3b, 0x9c,
-	0x10, 0x3f, 0x01, 0x95, 0x3f, 0x82, 0xfc, 0x59, 0x47, 0x6d, 0x84, 0x80, 0x9b, 0xfd, 0xe6, 0xbd,
-	0xb7, 0x33, 0x6f, 0x77, 0xe0, 0xf9, 0x8c, 0x8a, 0xf3, 0x74, 0x6a, 0x7a, 0x51, 0x68, 0x9d, 0x9e,
-	0xe3, 0xe9, 0x39, 0x65, 0x33, 0x7e, 0x8c, 0xe2, 0x53, 0x94, 0x5c, 0x58, 0x42, 0x30, 0xcb, 0x8d,
-	0xa9, 0xe5, 0x53, 0xee, 0x45, 0x73, 0x4c, 0x16, 0x57, 0x5f, 0x66, 0x9c, 0x44, 0x22, 0x22, 0x72,
-	0x0d, 0xf4, 0x1f, 0xcc, 0xa2, 0x68, 0x16, 0xa0, 0x95, 0x17, 0xa6, 0xe9, 0x99, 0x85, 0x61, 0x2c,
-	0x4a, 0x9e, 0xf1, 0x59, 0x82, 0xce, 0x11, 0x0a, 0xd7, 0x77, 0x85, 0x4b, 0x9e, 0x42, 0xfb, 0x02,
-	0x17, 0x9a, 0xa4, 0x4b, 0x3b, 0xbd, 0xe1, 0x7d, 0xf3, 0xca, 0xb3, 0x62, 0x98, 0x87, 0xb8, 0x70,
-	0x32, 0x0e, 0xb9, 0x0b, 0xeb, 0x73, 0x37, 0x48, 0x51, 0x6b, 0xe9, 0xd2, 0x4e, 0xd7, 0x29, 0x7e,
-	0x8c, 0x3d, 0x68, 0x1f, 0xe2, 0x82, 0xc8, 0xb0, 0xfe, 0xf6, 0xf4, 0xf5, 0xd8, 0x51, 0xd7, 0x08,
-	0xc0, 0xc6, 0x89, 0x33, 0x7e, 0x75, 0xf0, 0x41, 0x95, 0x88, 0x02, 0xb7, 0xed, 0x93, 0x93, 0xc9,
-	0xf8, 0xdd, 0x81, 0xda, 0xca, 0x0a, 0xd9, 0xcf, 0xc1, 0x48, 0x6d, 0x1b, 0x5f, 0x5b, 0xd0, 0xb5,
-	0x19, 0x8b, 0x52, 0xe6, 0x61, 0x88, 0x4c, 0x90, 0x1e, 0xb4, 0xa8, 0x9f, 0xf7, 0x21, 0x3b, 0x2d,
-	0xea, 0x93, 0xc7, 0xd0, 0xe5, 0x98, 0xcc, 0xa9, 0x87, 0x13, 0xe6, 0x86, 0xc5, 0xa1, 0xb2, 0xa3,
-	0x94, 0xd8, 0xb1, 0x1b, 0x22, 0x79, 0x02, 0x5b, 0x15, 0x65, 0x8e, 0x09, 0xa7, 0x11, 0xd3, 0xda,
-	0x39, 0xab, 0x57, 0xc2, 0xef, 0x0b, 0x94, 0xe8, 0xa0, 0xf8, 0xc8, 0xbd, 0x84, 0xc6, 0x22, 0x23,
-	0xdd, 0x2a, 0xac, 0x1a, 0x10, 0x79, 0x04, 0x0a, 0x43, 0x31, 0x71, 0x7d, 0x3f, 0x41, 0xce, 0x35,
-	0x25, 0x67, 0x00, 0x43, 0x61, 0x17, 0x08, 0x79, 0x08, 0x10, 0xa7, 0xd3, 0x80, 0x7a, 0x93, 0x2c,
-	0xae, 0x6e, 0x5e, 0x97, 0x0b, 0x24, 0x1b, 0x5f, 0x07, 0xc5, 0xc3, 0x44, 0xd0, 0x33, 0xea, 0xb9,
-	0x02, 0xb5, 0xcd, 0xe2, 0x84, 0x06, 0x44, 0x2c, 0xe8, 0x84, 0x65, 0xa4, 0xda, 0xb6, 0xde, 0xde,
-	0x51, 0x86, 0x77, 0x6e, 0x48, 0xdb, 0xa9, 0x49, 0xc6, 0x10, 0x36, 0xf7, 0x51, 0xd8, 0x41, 0xe0,
-	0xe0, 0xc7, 0x14, 0xb9, 0xb8, 0x96, 0x88, 0x74, 0x2d, 0x11, 0xe3, 0x05, 0xc0, 0x3e, 0x8a, 0x4a,
-	0xf0, 0xf7, 0x91, 0x1a, 0x29, 0x6c, 0xd5, 0xad, 0xfc, 0xb3, 0xcb, 0xd2, 0xac, 0x59, 0x94, 0x7f,
-	0x9c, 0xf5, 0x0d, 0x6c, 0x37, 0x1f, 0x03, 0x77, 0x90, 0xc7, 0x11, 0xe3, 0x48, 0x76, 0xa1, 0x53,
-	0x1a, 0x73, 0x4d, 0xca, 0x53, 0x6b, 0xbe, 0xd1, 0xa6, 0xc6, 0xa9, 0x89, 0xc3, 0xef, 0x2d, 0x90,
-	0x47, 0x15, 0x89, 0x3c, 0x83, 0x4e, 0xc5, 0x23, 0xab, 0xc4, 0xfd, 0x7b, 0x66, 0xb1, 0x31, 0x66,
-	0xb5, 0x31, 0xe6, 0x38, 0xdb, 0x18, 0x32, 0x82, 0x8d, 0xe2, 0x12, 0x88, 0xd6, 0x90, 0x2e, 0xdd,
-	0x4b, 0x5f, 0x5f, 0x61, 0x7a, 0x35, 0xc5, 0x1e, 0xb4, 0xf7, 0x51, 0x90, 0xed, 0x65, 0x8b, 0x4a,
-	0xbf, 0xaa, 0x29, 0x62, 0x83, 0x62, 0xfb, 0x7e, 0xbd, 0xaa, 0xfd, 0x9b, 0x32, 0x2c, 0x3d, 0x56,
-	0xf7, 0xdf, 0x1b, 0x61, 0x80, 0x02, 0xff, 0xc7, 0x65, 0x48, 0x40, 0xad, 0xf3, 0x3c, 0x72, 0x99,
-	0x3b, 0xc3, 0xe4, 0xa5, 0xfa, 0xed, 0x72, 0x20, 0xfd, 0xb8, 0x1c, 0x48, 0x3f, 0x2f, 0x07, 0xd2,
-	0x97, 0x5f, 0x83, 0xb5, 0xe9, 0x46, 0xae, 0xda, 0xfd, 0x1d, 0x00, 0x00, 0xff, 0xff, 0x11, 0x16,
-	0x9b, 0xee, 0xc7, 0x04, 0x00, 0x00,
+	// 666 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xa4, 0x54, 0xcd, 0x6e, 0xd3, 0x4c,
+	0x14, 0xad, 0xe3, 0xaf, 0xf9, 0x92, 0xeb, 0x34, 0x8d, 0x06, 0x5a, 0xac, 0x40, 0xd3, 0x60, 0x81,
+	0x08, 0x48, 0xc4, 0x52, 0x2a, 0x56, 0x08, 0x55, 0x41, 0x09, 0xa5, 0x2a, 0x2d, 0x95, 0x55, 0x10,
+	0x62, 0x13, 0x4d, 0xec, 0xdb, 0x74, 0x54, 0x67, 0x6c, 0xec, 0x71, 0x50, 0x54, 0x75, 0xd3, 0x57,
+	0x60, 0xc3, 0x96, 0xb7, 0x61, 0x89, 0xc4, 0x0b, 0xa0, 0xc2, 0x8a, 0xa7, 0x40, 0xfe, 0xad, 0xab,
+	0x36, 0xa0, 0xc2, 0xce, 0x73, 0xee, 0xb9, 0xe7, 0xcc, 0x9c, 0xeb, 0x19, 0x78, 0x32, 0x62, 0xe2,
+	0x20, 0x18, 0xb6, 0x4d, 0x67, 0xac, 0xef, 0x1d, 0xe0, 0xde, 0x01, 0xe3, 0x23, 0x7f, 0x07, 0xc5,
+	0x7b, 0xc7, 0x3b, 0xd4, 0x85, 0xe0, 0x3a, 0x75, 0x99, 0x6e, 0x31, 0xdf, 0x74, 0x26, 0xe8, 0x4d,
+	0xcf, 0xbe, 0xda, 0xae, 0xe7, 0x08, 0x87, 0x94, 0x33, 0xa0, 0x7e, 0x73, 0xe4, 0x38, 0x23, 0x1b,
+	0xf5, 0xa8, 0x30, 0x0c, 0xf6, 0x75, 0x1c, 0xbb, 0x22, 0xe1, 0xd5, 0x6f, 0x25, 0xc5, 0x50, 0x8d,
+	0x72, 0xee, 0x08, 0x2a, 0x98, 0xc3, 0xfd, 0xb8, 0xaa, 0x9d, 0x48, 0x50, 0xda, 0x46, 0x41, 0x2d,
+	0x2a, 0x28, 0xb9, 0x0f, 0xf2, 0x21, 0x4e, 0x55, 0xa9, 0x29, 0xb5, 0xaa, 0x9d, 0x1b, 0xed, 0x33,
+	0xc7, 0x94, 0xd1, 0xde, 0xc2, 0xa9, 0x11, 0x72, 0xc8, 0x75, 0x98, 0x9f, 0x50, 0x3b, 0x40, 0xb5,
+	0xd0, 0x94, 0x5a, 0x15, 0x23, 0x5e, 0x68, 0x8f, 0x40, 0xde, 0xc2, 0x29, 0x29, 0xc3, 0xfc, 0xcb,
+	0xbd, 0xe7, 0x7d, 0xa3, 0x36, 0x47, 0x00, 0x8a, 0xbb, 0x46, 0xff, 0xd9, 0xe6, 0x9b, 0x9a, 0x44,
+	0x14, 0xf8, 0xbf, 0xbb, 0xbb, 0x3b, 0xe8, 0xbf, 0xda, 0xac, 0x15, 0xc2, 0x42, 0xb8, 0xd8, 0xec,
+	0xd5, 0x64, 0xed, 0x67, 0x01, 0x2a, 0x5d, 0xce, 0x9d, 0x80, 0x9b, 0x38, 0x46, 0x2e, 0x48, 0x15,
+	0x0a, 0xcc, 0x8a, 0xf6, 0x51, 0x36, 0x0a, 0xcc, 0x22, 0xb7, 0xa1, 0xe2, 0xa3, 0x37, 0x61, 0x26,
+	0x0e, 0x38, 0x1d, 0xc7, 0xa6, 0x65, 0x43, 0x49, 0xb0, 0x1d, 0x3a, 0x46, 0x72, 0x0f, 0x16, 0x53,
+	0xca, 0x04, 0x3d, 0x9f, 0x39, 0x5c, 0x95, 0x23, 0x56, 0x35, 0x81, 0x5f, 0xc7, 0x28, 0x69, 0x82,
+	0x62, 0xa1, 0x6f, 0x7a, 0xcc, 0x0d, 0x73, 0x50, 0xff, 0x8b, 0xa5, 0x72, 0x10, 0xa9, 0x81, 0x1c,
+	0x78, 0xb6, 0x3a, 0x1f, 0x55, 0xc2, 0x4f, 0xb2, 0x0c, 0x45, 0x37, 0x18, 0xda, 0xcc, 0x54, 0x8b,
+	0x4d, 0xa9, 0x55, 0x32, 0x92, 0x15, 0x59, 0x05, 0x85, 0xa3, 0x18, 0x50, 0xcb, 0xf2, 0xd0, 0xf7,
+	0x55, 0x25, 0xea, 0x00, 0x8e, 0xa2, 0x1b, 0x23, 0x64, 0x05, 0x20, 0xa6, 0x0e, 0xc2, 0x60, 0x2b,
+	0x51, 0xbd, 0x1c, 0x23, 0x61, 0x50, 0x4d, 0x50, 0x4c, 0xf4, 0x04, 0xdb, 0x67, 0x26, 0x15, 0xa8,
+	0x2e, 0xc4, 0x7b, 0xc9, 0x41, 0xa1, 0x03, 0x75, 0x59, 0xe6, 0x50, 0x8d, 0x1d, 0xa8, 0xcb, 0x52,
+	0x07, 0x1d, 0x4a, 0xe3, 0x64, 0x3a, 0xea, 0x52, 0x53, 0x6e, 0x29, 0x9d, 0x6b, 0x97, 0x0c, 0xce,
+	0xc8, 0x48, 0x5a, 0x07, 0x16, 0x36, 0x50, 0x74, 0x6d, 0xdb, 0xc0, 0x77, 0x01, 0xfa, 0xe2, 0x42,
+	0xb8, 0xd2, 0x85, 0x70, 0xb5, 0x75, 0x80, 0x0d, 0x14, 0x69, 0xc3, 0xd5, 0xa7, 0xa3, 0x05, 0xb0,
+	0x98, 0x6d, 0xe5, 0xaf, 0x55, 0xce, 0x9d, 0x35, 0xcc, 0xfa, 0x8f, 0x67, 0x7d, 0x01, 0x4b, 0xf9,
+	0xff, 0xca, 0x37, 0xd0, 0x77, 0x1d, 0xee, 0x23, 0x59, 0x83, 0x52, 0x22, 0xec, 0xab, 0x52, 0x94,
+	0x5a, 0xfe, 0x77, 0xcf, 0xf7, 0x18, 0x19, 0xb1, 0xf3, 0x49, 0x86, 0x72, 0x2f, 0x25, 0x91, 0xc7,
+	0x50, 0x4a, 0x79, 0x64, 0x56, 0x73, 0x7d, 0xb9, 0x1d, 0xdf, 0xbe, 0x76, 0x7a, 0x35, 0xdb, 0xfd,
+	0xf0, 0x6a, 0x92, 0x43, 0x28, 0xc6, 0x43, 0x20, 0x6a, 0xae, 0xf5, 0xdc, 0x5c, 0xea, 0xcd, 0x19,
+	0xa2, 0xd9, 0x29, 0xb4, 0xbb, 0x27, 0x5f, 0x7f, 0x7c, 0x28, 0xac, 0x92, 0x95, 0xe8, 0x62, 0x67,
+	0x75, 0xfd, 0x28, 0x1f, 0xe4, 0x31, 0xa1, 0x20, 0x6f, 0xa0, 0x20, 0x4b, 0xe7, 0x9d, 0x52, 0x9b,
+	0x59, 0x7b, 0xd7, 0x1e, 0x44, 0xea, 0x77, 0x88, 0xf6, 0x5b, 0x75, 0xfd, 0x88, 0x59, 0xc7, 0xa4,
+	0x0b, 0x4a, 0xd7, 0xb2, 0xb2, 0x87, 0xa4, 0x7e, 0xd9, 0x58, 0x12, 0xbf, 0x59, 0x91, 0xf4, 0xa0,
+	0xda, 0x43, 0x1b, 0x05, 0xfe, 0x8b, 0x4a, 0x87, 0x40, 0x2d, 0x1b, 0xd1, 0x36, 0xe5, 0x74, 0x84,
+	0xde, 0xd3, 0xf5, 0xcf, 0xa7, 0x0d, 0xe9, 0xcb, 0x69, 0x43, 0xfa, 0x76, 0xda, 0x90, 0x3e, 0x7e,
+	0x6f, 0xcc, 0xbd, 0x7d, 0x78, 0xa5, 0xa7, 0x77, 0x58, 0x8c, 0x4c, 0xd6, 0x7e, 0x05, 0x00, 0x00,
+	0xff, 0xff, 0x7a, 0x2d, 0x85, 0xda, 0xb2, 0x05, 0x00, 0x00,
 }

@@ -18,16 +18,20 @@ type ARC struct {
 }
 
 func newARC(cb *CacheBuilder) *ARC {
-	c := &ARC{
-		items: make(map[interface{}]*arcItem),
-		t1:    newARCList(),
-		t2:    newARCList(),
-		b1:    newARCList(),
-		b2:    newARCList(),
-	}
+	c := &ARC{}
 	buildCache(&c.baseCache, cb)
+
+	c.init()
 	c.loadGroup.cache = c
 	return c
+}
+
+func (c *ARC) init() {
+	c.items = make(map[interface{}]*arcItem)
+	c.t1 = newARCList()
+	c.t2 = newARCList()
+	c.b1 = newARCList()
+	c.b2 = newARCList()
 }
 
 func (c *ARC) replace(key interface{}) {
@@ -142,7 +146,7 @@ func (c *ARC) GetIFPresent(key interface{}) (interface{}, error) {
 	return v, nil
 }
 
-func (c *ARC) get(key interface{}) (interface{}, error) {
+func (c *ARC) get(key interface{}, onLoad bool) (interface{}, error) {
 	rl := false
 	c.mu.RLock()
 	if elt := c.t1.Lookup(key); elt != nil {
@@ -154,6 +158,9 @@ func (c *ARC) get(key interface{}) (interface{}, error) {
 		if !item.IsExpired(nil) {
 			c.t2.PushFront(key)
 			c.mu.Unlock()
+			if !onLoad {
+				c.stats.IncrHitCount()
+			}
 			return item, nil
 		}
 		c.b2.PushFront(key)
@@ -170,6 +177,9 @@ func (c *ARC) get(key interface{}) (interface{}, error) {
 		if !item.IsExpired(nil) {
 			c.t2.MoveToFront(elt)
 			c.mu.Unlock()
+			if !onLoad {
+				c.stats.IncrHitCount()
+			}
 			return item, nil
 		}
 		c.t2.Remove(key, elt)
@@ -183,11 +193,14 @@ func (c *ARC) get(key interface{}) (interface{}, error) {
 	if !rl {
 		c.mu.RUnlock()
 	}
+	if !onLoad {
+		c.stats.IncrMissCount()
+	}
 	return nil, KeyNotFoundError
 }
 
 func (c *ARC) getValue(key interface{}) (interface{}, error) {
-	it, err := c.get(key)
+	it, err := c.get(key, false)
 	if err != nil {
 		return nil, err
 	}
@@ -280,31 +293,7 @@ func (c *ARC) Purge() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.items = make(map[interface{}]*arcItem)
-	c.t1 = newARCList()
-	c.t2 = newARCList()
-	c.b1 = newARCList()
-	c.b2 = newARCList()
-}
-
-func (c *ARC) gc() {
-	now := time.Now()
-	keys := []interface{}{}
-	c.mu.RLock()
-	for k, item := range c.items {
-		if item.IsExpired(&now) {
-			keys = append(keys, k)
-		}
-	}
-	c.mu.RUnlock()
-	if len(keys) == 0 {
-		return
-	}
-	c.mu.Lock()
-	for _, k := range keys {
-		c.remove(k)
-	}
-	c.mu.Unlock()
+	c.init()
 }
 
 // returns boolean value whether this item is expired or not.

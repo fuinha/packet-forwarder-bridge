@@ -16,14 +16,18 @@ func newLFUCache(cb *CacheBuilder) *LFUCache {
 	c := &LFUCache{}
 	buildCache(&c.baseCache, cb)
 
+	c.init()
+	c.loadGroup.cache = c
+	return c
+}
+
+func (c *LFUCache) init() {
 	c.freqList = list.New()
 	c.items = make(map[interface{}]*lfuItem, c.size+1)
 	c.freqList.PushFront(&freqEntry{
 		freq:  0,
 		items: make(map[*lfuItem]byte),
 	})
-	c.loadGroup.cache = c
-	return c
 }
 
 // set a new key-value pair
@@ -90,7 +94,7 @@ func (c *LFUCache) GetIFPresent(key interface{}) (interface{}, error) {
 	return v, nil
 }
 
-func (c *LFUCache) get(key interface{}) (interface{}, error) {
+func (c *LFUCache) get(key interface{}, onLoad bool) (interface{}, error) {
 	c.mu.RLock()
 	item, ok := c.items[key]
 	c.mu.RUnlock()
@@ -100,17 +104,23 @@ func (c *LFUCache) get(key interface{}) (interface{}, error) {
 			c.mu.Lock()
 			c.increment(item)
 			c.mu.Unlock()
+			if !onLoad {
+				c.stats.IncrHitCount()
+			}
 			return item, nil
 		}
 		c.mu.Lock()
 		c.removeItem(item)
 		c.mu.Unlock()
 	}
+	if !onLoad {
+		c.stats.IncrMissCount()
+	}
 	return nil, KeyNotFoundError
 }
 
 func (c *LFUCache) getValue(key interface{}) (interface{}, error) {
-	it, err := c.get(key)
+	it, err := c.get(key, false)
 	if err != nil {
 		return nil, err
 	}
@@ -243,29 +253,7 @@ func (c *LFUCache) Purge() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.freqList = list.New()
-	c.items = make(map[interface{}]*lfuItem, c.size)
-}
-
-// evict all expired entry
-func (c *LFUCache) gc() {
-	now := time.Now()
-	keys := []interface{}{}
-	c.mu.RLock()
-	for k, item := range c.items {
-		if item.IsExpired(&now) {
-			keys = append(keys, k)
-		}
-	}
-	c.mu.RUnlock()
-	if len(keys) == 0 {
-		return
-	}
-	c.mu.Lock()
-	for _, k := range keys {
-		c.remove(k)
-	}
-	c.mu.Unlock()
+	c.init()
 }
 
 type freqEntry struct {

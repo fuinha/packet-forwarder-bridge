@@ -14,9 +14,13 @@ func newSimpleCache(cb *CacheBuilder) *SimpleCache {
 	c := &SimpleCache{}
 	buildCache(&c.baseCache, cb)
 
-	c.items = make(map[interface{}]*simpleItem, c.size)
+	c.init()
 	c.loadGroup.cache = c
 	return c
+}
+
+func (c *SimpleCache) init() {
+	c.items = make(map[interface{}]*simpleItem, c.size)
 }
 
 // set a new key-value pair
@@ -76,23 +80,29 @@ func (c *SimpleCache) GetIFPresent(key interface{}) (interface{}, error) {
 	return v, nil
 }
 
-func (c *SimpleCache) get(key interface{}) (interface{}, error) {
+func (c *SimpleCache) get(key interface{}, onLoad bool) (interface{}, error) {
 	c.mu.RLock()
 	item, ok := c.items[key]
 	c.mu.RUnlock()
 	if ok {
 		if !item.IsExpired(nil) {
+			if !onLoad {
+				c.stats.IncrHitCount()
+			}
 			return item, nil
 		}
 		c.mu.Lock()
 		c.remove(key)
 		c.mu.Unlock()
 	}
+	if !onLoad {
+		c.stats.IncrMissCount()
+	}
 	return nil, KeyNotFoundError
 }
 
 func (c *SimpleCache) getValue(key interface{}) (interface{}, error) {
-	it, err := c.get(key)
+	it, err := c.get(key, false)
 	if err != nil {
 		return nil, err
 	}
@@ -192,28 +202,7 @@ func (c *SimpleCache) Purge() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	c.items = make(map[interface{}]*simpleItem, c.size)
-}
-
-// evict all expired entry
-func (c *SimpleCache) gc() {
-	now := time.Now()
-	keys := []interface{}{}
-	c.mu.RLock()
-	for k, item := range c.items {
-		if item.IsExpired(&now) {
-			keys = append(keys, k)
-		}
-	}
-	c.mu.RUnlock()
-	if len(keys) == 0 {
-		return
-	}
-	c.mu.Lock()
-	for _, k := range keys {
-		c.remove(k)
-	}
-	c.mu.Unlock()
+	c.init()
 }
 
 type simpleItem struct {
