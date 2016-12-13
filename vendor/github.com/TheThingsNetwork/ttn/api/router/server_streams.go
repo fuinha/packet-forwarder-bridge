@@ -6,6 +6,7 @@ package router
 import (
 	"io"
 
+	"github.com/TheThingsNetwork/go-utils/log"
 	"github.com/TheThingsNetwork/ttn/api"
 	"github.com/TheThingsNetwork/ttn/api/gateway"
 	"github.com/TheThingsNetwork/ttn/utils/errors"
@@ -15,7 +16,7 @@ import (
 
 // RouterStreamServer handles gRPC streams as channels
 type RouterStreamServer struct {
-	ctx                   api.Logger
+	ctx                   log.Interface
 	UplinkChanFunc        func(md metadata.MD) (ch chan *UplinkMessage, err error)
 	GatewayStatusChanFunc func(md metadata.MD) (ch chan *gateway.Status, err error)
 	DownlinkChanFunc      func(md metadata.MD) (ch <-chan *DownlinkMessage, cancel func(), err error)
@@ -24,12 +25,12 @@ type RouterStreamServer struct {
 // NewRouterStreamServer returns a new RouterStreamServer
 func NewRouterStreamServer() *RouterStreamServer {
 	return &RouterStreamServer{
-		ctx: api.GetLogger(),
+		ctx: log.Get(),
 	}
 }
 
 // SetLogger sets the logger
-func (s *RouterStreamServer) SetLogger(logger api.Logger) {
+func (s *RouterStreamServer) SetLogger(logger log.Interface) {
 	s.ctx = logger
 }
 
@@ -60,7 +61,7 @@ func (s *RouterStreamServer) Uplink(stream Router_UplinkServer) (err error) {
 			return err
 		}
 		if err := uplink.Validate(); err != nil {
-			return errors.BuildGRPCError(errors.Wrap(err, "Invalid Uplink"))
+			return errors.Wrap(err, "Invalid Uplink")
 		}
 		ch <- uplink
 	}
@@ -76,13 +77,17 @@ func (s *RouterStreamServer) Subscribe(req *SubscribeRequest, stream Router_Subs
 	if err != nil {
 		return err
 	}
-	defer cancel()
+	go func() {
+		<-stream.Context().Done()
+		err = stream.Context().Err()
+		cancel()
+	}()
 	for downlink := range ch {
 		if err := stream.Send(downlink); err != nil {
 			return err
 		}
 	}
-	return nil
+	return
 }
 
 // GatewayStatus handles gateway status streams
@@ -107,7 +112,7 @@ func (s *RouterStreamServer) GatewayStatus(stream Router_GatewayStatusServer) er
 			return err
 		}
 		if err := status.Validate(); err != nil {
-			return errors.BuildGRPCError(errors.Wrap(err, "Invalid Gateway Status"))
+			return errors.Wrap(err, "Invalid Gateway Status")
 		}
 		ch <- status
 	}

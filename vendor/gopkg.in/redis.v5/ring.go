@@ -230,7 +230,7 @@ func (c *Ring) addClient(name string, cl *Client) {
 	c.mu.Unlock()
 }
 
-func (c *Ring) shardByKey(key string) (*Client, error) {
+func (c *Ring) shardByKey(key string) (*ringShard, error) {
 	key = hashtag.Key(key)
 
 	c.mu.RLock()
@@ -246,27 +246,27 @@ func (c *Ring) shardByKey(key string) (*Client, error) {
 		return nil, errRingShardsDown
 	}
 
-	cl := c.shards[name].Client
+	shard := c.shards[name]
 	c.mu.RUnlock()
-	return cl, nil
+	return shard, nil
 }
 
-func (c *Ring) randomShard() (*Client, error) {
+func (c *Ring) randomShard() (*ringShard, error) {
 	return c.shardByKey(strconv.Itoa(rand.Int()))
 }
 
-func (c *Ring) shardByName(name string) (*Client, error) {
+func (c *Ring) shardByName(name string) (*ringShard, error) {
 	if name == "" {
 		return c.randomShard()
 	}
 
 	c.mu.RLock()
-	cl := c.shards[name].Client
+	shard := c.shards[name]
 	c.mu.RUnlock()
-	return cl, nil
+	return shard, nil
 }
 
-func (c *Ring) cmdShard(cmd Cmder) (*Client, error) {
+func (c *Ring) cmdShard(cmd Cmder) (*ringShard, error) {
 	cmdInfo := c.cmdInfo(cmd.arg(0))
 	firstKey := cmd.arg(cmdFirstKeyPos(cmd, cmdInfo))
 	if firstKey == "" {
@@ -276,12 +276,12 @@ func (c *Ring) cmdShard(cmd Cmder) (*Client, error) {
 }
 
 func (c *Ring) Process(cmd Cmder) error {
-	cl, err := c.cmdShard(cmd)
+	shard, err := c.cmdShard(cmd)
 	if err != nil {
 		cmd.setErr(err)
 		return err
 	}
-	return cl.baseClient.Process(cmd)
+	return shard.Client.Process(cmd)
 }
 
 // rebalance removes dead shards from the Ring.
@@ -332,7 +332,7 @@ func (c *Ring) heartbeat() {
 //
 // It is rare to Close a Ring, as the Ring is meant to be long-lived
 // and shared between many goroutines.
-func (c *Ring) Close() (retErr error) {
+func (c *Ring) Close() error {
 	defer c.mu.Unlock()
 	c.mu.Lock()
 
@@ -341,15 +341,16 @@ func (c *Ring) Close() (retErr error) {
 	}
 	c.closed = true
 
+	var firstErr error
 	for _, shard := range c.shards {
-		if err := shard.Client.Close(); err != nil {
-			retErr = err
+		if err := shard.Client.Close(); err != nil && firstErr == nil {
+			firstErr = err
 		}
 	}
 	c.hash = nil
 	c.shards = nil
 
-	return retErr
+	return firstErr
 }
 
 func (c *Ring) Pipeline() *Pipeline {
@@ -384,7 +385,7 @@ func (c *Ring) pipelineExec(cmds []Cmder) (firstErr error) {
 				resetCmds(cmds)
 			}
 
-			client, err := c.shardByName(name)
+			shard, err := c.shardByName(name)
 			if err != nil {
 				setCmdsErr(cmds, err)
 				if firstErr == nil {
@@ -393,7 +394,7 @@ func (c *Ring) pipelineExec(cmds []Cmder) (firstErr error) {
 				continue
 			}
 
-			cn, _, err := client.conn()
+			cn, _, err := shard.Client.conn()
 			if err != nil {
 				setCmdsErr(cmds, err)
 				if firstErr == nil {
@@ -402,8 +403,8 @@ func (c *Ring) pipelineExec(cmds []Cmder) (firstErr error) {
 				continue
 			}
 
-			retry, err := execCmds(cn, cmds)
-			client.putConn(cn, err, false)
+			retry, err := shard.Client.execCmds(cn, cmds)
+			shard.Client.putConn(cn, err, false)
 			if err == nil {
 				continue
 			}

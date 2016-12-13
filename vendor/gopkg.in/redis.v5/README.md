@@ -32,22 +32,6 @@ Import:
 import "gopkg.in/redis.v5"
 ```
 
-## Vendoring
-
-If you are using a vendoring tool with support for semantic versioning
-e.g. [glide](https://github.com/Masterminds/glide), you can import this
-package via its GitHub URL:
-
-```yaml
-- package: github.com/go-redis/redis
-  version: ^5.0.0
-```
-
-WARNING: please note that by importing `github.com/go-redis/redis`
-directly (without semantic versioning constrol) you are in danger of
-running in the breaking API changes. Use carefully and at your own
-risk!
-
 ## Quickstart
 
 ```go
@@ -103,7 +87,7 @@ Some corner cases:
     vals, err := client.Sort("list", redis.Sort{Offset: 0, Count: 2, Order: "ASC"}).Result()
 
     ZRANGEBYSCORE zset -inf +inf WITHSCORES LIMIT 0 2
-    vals, err := client.ZRangeByScoreWithScores("zset", redis.ZRangeByScore{
+    vals, err := client.ZRangeByScoreWithScores("zset", redis.ZRangeBy{
         Min: "-inf",
         Max: "+inf",
         Offset: 0,

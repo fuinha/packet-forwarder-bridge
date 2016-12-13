@@ -156,7 +156,7 @@ func (c *clusterNodes) All() ([]*clusterNode, error) {
 		return nil, pool.ErrClosed
 	}
 
-	var nodes []*clusterNode
+	nodes := make([]*clusterNode, 0, len(c.nodes))
 	for _, node := range c.nodes {
 		nodes = append(nodes, node)
 	}
@@ -208,7 +208,7 @@ func (c *clusterNodes) Random() (*clusterNode, error) {
 	}
 
 	var nodeErr error
-	for i := 0; i < 10; i++ {
+	for i := 0; i <= c.opt.MaxRedirects; i++ {
 		n := rand.Intn(len(addrs))
 		node, err := c.Get(addrs[n])
 		if err != nil {
@@ -366,7 +366,7 @@ func (c *ClusterClient) state() *clusterState {
 func (c *ClusterClient) cmdSlotAndNode(state *clusterState, cmd Cmder) (int, *clusterNode, error) {
 	cmdInfo := c.cmds[cmd.arg(0)]
 	firstKey := cmd.arg(cmdFirstKeyPos(cmd, cmdInfo))
-	if firstKey == "" {
+	if firstKey == "" || cmdInfo == nil {
 		node, err := c.nodes.Random()
 		return -1, node, err
 	}
@@ -387,7 +387,13 @@ func (c *ClusterClient) cmdSlotAndNode(state *clusterState, cmd Cmder) (int, *cl
 }
 
 func (c *ClusterClient) Watch(fn func(*Tx) error, keys ...string) error {
-	node, err := c.state().slotMasterNode(hashtag.Slot(keys[0]))
+	var node *clusterNode
+	var err error
+	if len(keys) > 0 {
+		node, err = c.state().slotMasterNode(hashtag.Slot(keys[0]))
+	} else {
+		node, err = c.nodes.Random()
+	}
 	if err != nil {
 		return err
 	}
@@ -440,6 +446,10 @@ func (c *ClusterClient) Process(cmd Cmder) error {
 		// On network errors try random node.
 		if internal.IsRetryableError(err) {
 			node, err = c.nodes.Random()
+			if err != nil {
+				cmd.setErr(err)
+				return err
+			}
 			continue
 		}
 
@@ -467,6 +477,39 @@ func (c *ClusterClient) Process(cmd Cmder) error {
 	}
 
 	return cmd.Err()
+}
+
+// ForEachNode concurrently calls the fn on each ever known node in the cluster.
+// It returns the first error if any.
+func (c *ClusterClient) ForEachNode(fn func(client *Client) error) error {
+	nodes, err := c.nodes.All()
+	if err != nil {
+		return err
+	}
+
+	var wg sync.WaitGroup
+	errCh := make(chan error, 1)
+	for _, node := range nodes {
+		wg.Add(1)
+		go func(node *clusterNode) {
+			defer wg.Done()
+			err := fn(node.Client)
+			if err != nil {
+				select {
+				case errCh <- err:
+				default:
+				}
+			}
+		}(node)
+	}
+	wg.Wait()
+
+	select {
+	case err := <-errCh:
+		return err
+	default:
+		return nil
+	}
 }
 
 // ForEachMaster concurrently calls the fn on each master node in the cluster.
@@ -612,10 +655,10 @@ func (c *ClusterClient) Pipelined(fn func(*Pipeline) error) ([]Cmder, error) {
 }
 
 func (c *ClusterClient) pipelineExec(cmds []Cmder) error {
-	var retErr error
-	setRetErr := func(err error) {
-		if retErr == nil {
-			retErr = err
+	var firstErr error
+	setFirstErr := func(err error) {
+		if firstErr == nil {
+			firstErr = err
 		}
 	}
 
@@ -625,7 +668,7 @@ func (c *ClusterClient) pipelineExec(cmds []Cmder) error {
 		_, node, err := c.cmdSlotAndNode(state, cmd)
 		if err != nil {
 			cmd.setErr(err)
-			setRetErr(err)
+			setFirstErr(err)
 			continue
 		}
 		cmdsMap[node] = append(cmdsMap[node], cmd)
@@ -638,37 +681,41 @@ func (c *ClusterClient) pipelineExec(cmds []Cmder) error {
 			cn, _, err := node.Client.conn()
 			if err != nil {
 				setCmdsErr(cmds, err)
-				setRetErr(err)
+				setFirstErr(err)
 				continue
 			}
 
 			failedCmds, err = c.execClusterCmds(cn, cmds, failedCmds)
-			if err != nil {
-				setRetErr(err)
-			}
 			node.Client.putConn(cn, err, false)
+			if err != nil {
+				setFirstErr(err)
+			}
 		}
 
 		cmdsMap = failedCmds
 	}
 
-	return retErr
+	return firstErr
 }
 
 func (c *ClusterClient) execClusterCmds(
 	cn *pool.Conn, cmds []Cmder, failedCmds map[*clusterNode][]Cmder,
 ) (map[*clusterNode][]Cmder, error) {
+	cn.SetWriteTimeout(c.opt.WriteTimeout)
 	if err := writeCmd(cn, cmds...); err != nil {
 		setCmdsErr(cmds, err)
 		return failedCmds, err
 	}
 
-	var retErr error
-	setRetErr := func(err error) {
-		if retErr == nil {
-			retErr = err
+	var firstErr error
+	setFirstErr := func(err error) {
+		if firstErr == nil {
+			firstErr = err
 		}
 	}
+
+	// Set read timeout for all commands.
+	cn.SetReadTimeout(c.opt.ReadTimeout)
 
 	for i, cmd := range cmds {
 		err := cmd.readReply(cn)
@@ -676,9 +723,15 @@ func (c *ClusterClient) execClusterCmds(
 			continue
 		}
 
-		if i == 0 && internal.IsNetworkError(err) {
+		if i == 0 && internal.IsRetryableError(err) {
+			node, err := c.nodes.Random()
+			if err != nil {
+				setFirstErr(err)
+				continue
+			}
+
 			cmd.reset()
-			failedCmds[nil] = append(failedCmds[nil], cmds...)
+			failedCmds[node] = append(failedCmds[node], cmds...)
 			break
 		}
 
@@ -688,7 +741,7 @@ func (c *ClusterClient) execClusterCmds(
 
 			node, err := c.nodes.Get(addr)
 			if err != nil {
-				setRetErr(err)
+				setFirstErr(err)
 				continue
 			}
 
@@ -697,16 +750,16 @@ func (c *ClusterClient) execClusterCmds(
 		} else if ask {
 			node, err := c.nodes.Get(addr)
 			if err != nil {
-				setRetErr(err)
+				setFirstErr(err)
 				continue
 			}
 
 			cmd.reset()
 			failedCmds[node] = append(failedCmds[node], NewCmd("ASKING"), cmd)
 		} else {
-			setRetErr(err)
+			setFirstErr(err)
 		}
 	}
 
-	return failedCmds, retErr
+	return failedCmds, firstErr
 }

@@ -10,68 +10,72 @@ package discovery;
 
 option go_package = "github.com/TheThingsNetwork/ttn/api/discovery";
 
-// Announcements have a list of Metadata
 message Metadata {
+  oneof metadata {
+    // General metadata (0-9)
 
-  // In the future we will have to change this message to use a oneof.
+    // <nothing yet>
 
-  // The Key indicates the metadata type
-  enum Key {
-    // OTHER indicates arbitrary metadata. We currently don't allow this.
-    OTHER = 0;
+    // Metadata for Router component (10-19)
 
-    // The value for PREFIX consists of 1 byte denoting the number of bits,
-    // followed by the prefix and enough trailing bits to fill 4 octets.
-    // Only authorized brokers can announce PREFIX metadata.
-    PREFIX = 1;
+    // <nothing yet>
 
-    // APP_EUI is used for announcing join handlers. The value for APP_EUI
-    // is the byte slice of the AppEUI.
-    // Only authorized join handlers can announce APP_EUI metadata (and we
-    // don't have any of those yet).
-    APP_EUI = 2;
+    // Metadata for Broker component (20-29)
 
-    // APP_ID is used for announcing that this handler is responsible for
-    // a certain AppID. The value for APP_ID is the byte slice of the AppID
-    // string. This metadata can only be added if the requesting client is
-    // authorized to manage this AppID.
-    APP_ID = 3;
+    // DevAddr prefix that is routed by this Broker
+    // 5 bytes; the first byte is the prefix length, the following 4 bytes are the address.
+    // Only authorized Brokers can announce PREFIX metadata.
+    bytes dev_addr_prefix = 20; // for some reason gogoproto customtype doesn't work in a oneof, so we do this manually
+
+    // Metadata for Handler component (30-39)
+
+    // AppID that is registered to this Handler
+    // This metadata can only be added if the requesting client is authorized to manage this AppID.
+    string app_id = 30;
+
+    // AppEUI that is registered to this Join Handler
+    // Only authorized Join Handlers can announce APP_EUI metadata (and we don't have any of those yet).
+    bytes app_eui = 31; // for some reason gogoproto customtype doesn't work in a oneof, so we do this manually
   }
-
-  // The key indicates the metadata type
-  Key key = 1;
-
-  // The value depends on the key type
-  bytes value = 2;
 }
 
 // The Announcement of a service (also called component)
 message Announcement {
   // The ID of the component
   string id = 1;
+
   // The name of the component (router/broker/handler)
   string service_name = 2;
+
   // Service version in the form "[version]-[commit] ([build date])"
   string service_version = 3;
+
   // Description of the component
   string description = 4;
+
   // URL with documentation or more information about this component
   string url         = 5;
+
   // Indicates whether this service is part of The Things Network (the public community network)
   bool   public      = 6;
+
   // Comma-separated network addresses in the form "[hostname]:[port]" (currently we only use the first)
   string net_address = 11;
+
   // ECDSA public key of this component
   string public_key  = 12;
+
   // TLS Certificate (if TLS is enabled)
   string certificate = 13;
+
   // Contains the address where the HTTP API is exposed (if there is one)
   string api_address = 14;
+
   // Metadata for this component
-  repeated Metadata metadata = 21;
+  repeated Metadata metadata = 22;
 }
 
-message GetAllRequest {
+message GetServiceRequest {
   // The name of the service (router/broker/handler)
   string service_name = 1;
 }
@@ -80,6 +84,7 @@ message GetAllRequest {
 message GetRequest {
   // The ID of the service
   string id = 1;
+
   // The name of the service (router/broker/handler)
   string service_name = 2;
 }
@@ -88,9 +93,12 @@ message GetRequest {
 message MetadataRequest {
   // The ID of the service that should be modified
   string id = 1;
+
   // The name of the service (router/broker/handler) that should be modified
   string service_name = 2;
-  Metadata metadata = 11;
+
+  // Metadata to add or remove
+  Metadata metadata = 12;
 }
 
 // A list of announcements
@@ -100,22 +108,28 @@ message AnnouncementsResponse {
 
 // The Discovery service is used to discover services within The Things Network.
 service Discovery {
-  // Announce your component to the Discovery server
+  // Announce a component to the Discovery server.
+  // A call to `Announce` does not processes the `metadata` field, so you can safely leave this field empty.
+  // Adding or removing Metadata should be done with the `AddMetadata` and `DeleteMetadata` methods.
   rpc Announce(Announcement) returns (google.protobuf.Empty);
-  // Get all announcements for a specific service
-  rpc GetAll(GetAllRequest) returns (AnnouncementsResponse) {
+
+  // Get all announcements for a specific service type
+  rpc GetAll(GetServiceRequest) returns (AnnouncementsResponse) {
     option (google.api.http) = {
       get: "/announcements/{service_name}"
     };
   }
+
   // Get a specific announcement
   rpc Get(GetRequest) returns (Announcement)  {
     option (google.api.http) = {
       get: "/announcements/{service_name}/{id}"
     };
   }
+
   // Add metadata to an announement
   rpc AddMetadata(MetadataRequest) returns (google.protobuf.Empty);
+
   // Delete metadata from an announcement
   rpc DeleteMetadata(MetadataRequest) returns (google.protobuf.Empty);
 }

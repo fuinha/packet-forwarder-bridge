@@ -5,9 +5,10 @@ package router
 
 import (
 	"io"
+	"sync"
 	"time"
 
-	"github.com/TheThingsNetwork/ttn/api"
+	"github.com/TheThingsNetwork/go-utils/log"
 	"github.com/TheThingsNetwork/ttn/api/gateway"
 	"github.com/TheThingsNetwork/ttn/utils/backoff"
 	"github.com/golang/protobuf/ptypes/empty"
@@ -23,7 +24,8 @@ type GatewayStream interface {
 
 type gatewayStream struct {
 	closing bool
-	ctx     api.Logger
+	setup   sync.WaitGroup
+	ctx     log.Interface
 	client  RouterClientForGateway
 }
 
@@ -42,6 +44,7 @@ func NewMonitoredGatewayStatusStream(client RouterClientForGateway) GatewayStatu
 		ch:  make(chan *gateway.Status, DefaultBufferSize),
 		err: make(chan error),
 	}
+	s.setup.Add(1)
 	s.client = client
 	s.ctx = client.GetLogger()
 
@@ -55,15 +58,20 @@ func NewMonitoredGatewayStatusStream(client RouterClientForGateway) GatewayStatu
 
 			// Session client
 			client, err := s.client.GatewayStatus()
+			s.setup.Done()
 			if err != nil {
+				if grpc.Code(err) == codes.Canceled {
+					s.ctx.Debug("Stopped GatewayStatus stream")
+					break
+				}
 				s.ctx.WithError(err).Warn("Could not start GatewayStatus stream, retrying...")
+				s.setup.Add(1)
 				time.Sleep(backoff.Backoff(retries))
 				retries++
 				continue
 			}
-			retries = 0
 
-			s.ctx.Debug("Started GatewayStatus stream")
+			s.ctx.Info("Started GatewayStatus stream")
 
 			// Receive errors
 			go func() {
@@ -91,6 +99,8 @@ func NewMonitoredGatewayStatusStream(client RouterClientForGateway) GatewayStatu
 		monitor:
 			for {
 				select {
+				case <-time.After(10 * time.Second):
+					retries = 0
 				case mErr = <-errCh:
 					break monitor
 				case msg, ok := <-s.ch:
@@ -102,16 +112,19 @@ func NewMonitoredGatewayStatusStream(client RouterClientForGateway) GatewayStatu
 			}
 
 			close(ch)
-			_, mErr = client.CloseAndRecv()
+			client.CloseAndRecv()
 
 			if mErr == nil || mErr == io.EOF || grpc.Code(mErr) == codes.Canceled {
 				s.ctx.Debug("Stopped GatewayStatus stream")
-				if s.closing {
-					break
-				}
 			} else {
 				s.ctx.WithError(mErr).Warn("Error in GatewayStatus stream")
 			}
+
+			if s.closing {
+				break
+			}
+
+			s.setup.Add(1)
 			time.Sleep(backoff.Backoff(retries))
 			retries++
 		}
@@ -136,6 +149,8 @@ func (s *gatewayStatusStream) Send(status *gateway.Status) error {
 }
 
 func (s *gatewayStatusStream) Close() {
+	s.setup.Wait()
+	s.ctx.Debug("Closing GatewayStatus stream")
 	s.closing = true
 	close(s.ch)
 }
@@ -152,6 +167,7 @@ func NewMonitoredUplinkStream(client RouterClientForGateway) UplinkStream {
 		ch:  make(chan *UplinkMessage, DefaultBufferSize),
 		err: make(chan error),
 	}
+	s.setup.Add(1)
 	s.client = client
 	s.ctx = client.GetLogger()
 
@@ -165,15 +181,20 @@ func NewMonitoredUplinkStream(client RouterClientForGateway) UplinkStream {
 
 			// Session client
 			client, err := s.client.Uplink()
+			s.setup.Done()
 			if err != nil {
+				if grpc.Code(err) == codes.Canceled {
+					s.ctx.Debug("Stopped Uplink stream")
+					break
+				}
 				s.ctx.WithError(err).Warn("Could not start Uplink stream, retrying...")
+				s.setup.Add(1)
 				time.Sleep(backoff.Backoff(retries))
 				retries++
 				continue
 			}
-			retries = 0
 
-			s.ctx.Debug("Started Uplink stream")
+			s.ctx.Info("Started Uplink stream")
 
 			// Receive errors
 			go func() {
@@ -201,6 +222,8 @@ func NewMonitoredUplinkStream(client RouterClientForGateway) UplinkStream {
 		monitor:
 			for {
 				select {
+				case <-time.After(10 * time.Second):
+					retries = 0
 				case mErr = <-errCh:
 					break monitor
 				case msg, ok := <-s.ch:
@@ -212,16 +235,19 @@ func NewMonitoredUplinkStream(client RouterClientForGateway) UplinkStream {
 			}
 
 			close(ch)
-			_, mErr = client.CloseAndRecv()
+			client.CloseAndRecv()
 
 			if mErr == nil || mErr == io.EOF || grpc.Code(mErr) == codes.Canceled {
 				s.ctx.Debug("Stopped Uplink stream")
-				if s.closing {
-					break
-				}
 			} else {
 				s.ctx.WithError(mErr).Warn("Error in Uplink stream")
 			}
+
+			if s.closing {
+				break
+			}
+
+			s.setup.Add(1)
 			time.Sleep(backoff.Backoff(retries))
 			retries++
 		}
@@ -246,11 +272,13 @@ func (s *uplinkStream) Send(message *UplinkMessage) error {
 }
 
 func (s *uplinkStream) Close() {
+	s.setup.Wait()
+	s.ctx.Debug("Closing Uplink stream")
 	s.closing = true
 	close(s.ch)
 }
 
-// DownlinkStream for sending downlink messages
+// DownlinkStream for receiving downlink messages
 type DownlinkStream interface {
 	GatewayStream
 	Channel() <-chan *DownlinkMessage
@@ -262,6 +290,7 @@ func NewMonitoredDownlinkStream(client RouterClientForGateway) DownlinkStream {
 		ch:  make(chan *DownlinkMessage, DefaultBufferSize),
 		err: make(chan error),
 	}
+	s.setup.Add(1)
 	s.client = client
 	s.ctx = client.GetLogger()
 
@@ -273,15 +302,20 @@ func NewMonitoredDownlinkStream(client RouterClientForGateway) DownlinkStream {
 
 		for {
 			client, s.cancel, err = s.client.Subscribe()
+			s.setup.Done()
 			if err != nil {
+				if grpc.Code(err) == codes.Canceled {
+					s.ctx.Debug("Stopped Downlink stream")
+					break
+				}
 				s.ctx.WithError(err).Warn("Could not start Downlink stream, retrying...")
+				s.setup.Add(1)
 				time.Sleep(backoff.Backoff(retries))
 				retries++
 				continue
 			}
-			retries = 0
 
-			s.ctx.Debug("Started Downlink stream")
+			s.ctx.Info("Started Downlink stream")
 
 			for {
 				message, err = client.Recv()
@@ -296,16 +330,20 @@ func NewMonitoredDownlinkStream(client RouterClientForGateway) DownlinkStream {
 				if err != nil {
 					break
 				}
+				retries = 0
 			}
 
 			if err == nil || err == io.EOF || grpc.Code(err) == codes.Canceled {
 				s.ctx.Debug("Stopped Downlink stream")
-				if s.closing {
-					break
-				}
 			} else {
 				s.ctx.WithError(err).Warn("Error in Downlink stream")
 			}
+
+			if s.closing {
+				break
+			}
+
+			s.setup.Add(1)
 			time.Sleep(backoff.Backoff(retries))
 			retries++
 		}
@@ -323,6 +361,8 @@ type downlinkStream struct {
 }
 
 func (s *downlinkStream) Close() {
+	s.setup.Wait()
+	s.ctx.Debug("Closing Downlink stream")
 	s.closing = true
 	if s.cancel != nil {
 		s.cancel()

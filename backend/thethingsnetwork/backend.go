@@ -6,7 +6,8 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/TheThingsNetwork/ttn/api"
+	ttnlog "github.com/TheThingsNetwork/go-utils/log"
+	"github.com/TheThingsNetwork/go-utils/log/logrus"
 	pb_discovery "github.com/TheThingsNetwork/ttn/api/discovery"
 	pb_gateway "github.com/TheThingsNetwork/ttn/api/gateway"
 	pb_protocol "github.com/TheThingsNetwork/ttn/api/protocol"
@@ -21,7 +22,7 @@ import (
 )
 
 func init() {
-	api.SetLogger(WrapLogrus())
+	ttnlog.Set(logrus.StandardLogrus())
 }
 
 type gtwConf struct {
