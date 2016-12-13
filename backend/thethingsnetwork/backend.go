@@ -167,6 +167,11 @@ func (b *Backend) AddGateway(euiStr, id, token string) error {
 	return nil
 }
 
+// InjectBridge injects a bridge string into each gateway status
+func (b *Backend) InjectBridge(bridge string) {
+	b.gatewayStatus.Bridge = bridge
+}
+
 // InjectRegion injects a region string into each gateway status
 func (b *Backend) InjectRegion(region string) {
 	b.gatewayStatus.Region = region

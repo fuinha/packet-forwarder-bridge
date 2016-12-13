@@ -59,6 +59,10 @@ func run(c *cli.Context) error {
 		}
 	}
 
+	if bridge := c.String("ttn-inject-bridge"); bridge != "" {
+		ttn.InjectBridge(bridge)
+	}
+
 	if region := c.String("ttn-inject-region"); region != "" {
 		ttn.InjectRegion(region)
 	}
@@ -165,6 +169,12 @@ func main() {
 			Usage:  "TTN Gateway Token",
 			Value:  "",
 			EnvVar: "TTN_GATEWAY_TOKEN",
+		},
+		cli.StringFlag{
+			Name:   "ttn-inject-bridge",
+			Usage:  "TTN Bridge string to inject into Status messages",
+			Value:  "",
+			EnvVar: "TTN_INJECT_BRIDGE",
 		},
 		cli.StringFlag{
 			Name:   "ttn-inject-region",
