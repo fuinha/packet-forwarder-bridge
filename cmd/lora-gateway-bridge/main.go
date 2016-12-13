@@ -3,11 +3,13 @@ package main
 //go:generate ./doc.sh
 
 import (
+	"io/ioutil"
 	"os"
 	"os/signal"
 	"syscall"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/TheThingsNetwork/ttn/api"
 	"github.com/brocaar/lora-gateway-bridge/backend/thethingsnetwork"
 	"github.com/brocaar/lora-gateway-bridge/gateway"
 	"github.com/brocaar/loraserver/api/gw"
@@ -24,6 +26,18 @@ func run(c *cli.Context) error {
 		"version": version,
 		"docs":    "https://docs.loraserver.io/lora-gateway-bridge/",
 	}).Info("starting LoRa Gateway Bridge")
+
+	if rootCAFile := c.String("root-ca-file"); rootCAFile != "" {
+		roots, err := ioutil.ReadFile(rootCAFile)
+		if err != nil {
+			log.WithError(err).Fatal("Could not load Root CA file")
+		}
+		if !api.RootCAs.AppendCertsFromPEM(roots) {
+			log.Warn("Could not load all CAs from the Root CA file")
+		} else {
+			log.Infof("Using Root CAs from %s", rootCAFile)
+		}
+	}
 
 	ttn, err := thethingsnetwork.NewBackend(
 		c.String("ttn-discovery-server"),
@@ -121,6 +135,12 @@ func main() {
 			Usage:  "TTN Discovery Server",
 			Value:  "localhost:1900",
 			EnvVar: "TTN_DISCOVERY_SERVER",
+		},
+		cli.StringFlag{
+			Name:   "root-ca-file",
+			Usage:  "Root CA file",
+			Value:  "",
+			EnvVar: "ROOT_CA_FILE",
 		},
 		cli.StringFlag{
 			Name:   "ttn-router",
