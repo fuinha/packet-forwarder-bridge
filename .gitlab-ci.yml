@@ -20,7 +20,6 @@ tests:
     TEST_MQTT_SERVER: tcp://ansi-mosquitto:1883
   script:
     - go get github.com/golang/lint/golint
-    - go get github.com/kisielk/errcheck
     - pushd $GOPATH/src/$PACKAGE_NAME
     - make test
     - popd
@@ -30,7 +29,12 @@ binaries:
   image: golang:latest
   script:
     - pushd $GOPATH/src/$PACKAGE_NAME
-    - make build
+    - GOOS=linux GOARCH=386 make build
+    - GOOS=linux GOARCH=amd64 make build
+    - GOOS=linux GOARCH=arm make build
+    - GOOS=darwin GOARCH=amd64 make build
+    - GOOS=windows GOARCH=386 make build
+    - GOOS=windows GOARCH=amd64 make build
     - popd
     - mkdir build
     - cp -R $GOPATH/src/$PACKAGE_NAME/build/* build/
