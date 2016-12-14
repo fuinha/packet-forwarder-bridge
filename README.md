@@ -1,85 +1,56 @@
-# LoRa Gateway Bridge
+# LoRa Gateway Bridge / Packet Forwarder Bridge - The Things Network Fork
 
-[![Build Status](https://travis-ci.org/brocaar/lora-gateway-bridge.svg?branch=master)](https://travis-ci.org/brocaar/lora-gateway-bridge)
-[![GoDoc](https://godoc.org/github.com/brocaar/lora-gateway-bridge/cmd/gateway-bridge?status.svg)](https://godoc.org/github.com/brocaar/lora-gateway-bridge/cmd/lora-gateway-bridge)
-[![Gitter chat](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/loraserver/lora-gateway-bridge)
-
-LoRa Gateway Bridge is a service which abstracts the 
+LoRa Gateway Bridge (or Packet Forwarder Bridge) is a service that does protocol translation between the
 [packet_forwarder UDP protocol](https://github.com/Lora-net/packet_forwarder/blob/master/PROTOCOL.TXT)
-running on most LoRa gateways into JSON over MQTT. It enables you to use MQTT for
-receiving data from and sending data to your gateways.
-This project is part of [LoRa Server](https://github.com/brocaar/loraserver).
+running on most LoRa gateways and the Protocol Buffers over gRPC that are used in 
+[The Things Network's backend](https://github.com/TheThingsNetwork/ttn).
 
-## Documentation
+## Installation
 
-See [http://docs.loraserver.io/lora-gateway-bridge](http://docs.loraserver.io/lora-gateway-bridge)
-for documentation about setting up LoRa Gateway Bridge.
+You can download binaries for [macOS][darwin-amd64], [64 bit Linux][linux-amd64], [32 bit Linux][linux-386], [arm Linux][linux-arm], [64 bit Windows][windows-amd64] or [32 bit Windows][windows-386]. You can also install from source with the following steps:
 
-## Compatibility
+[darwin-amd64]:https://ttnreleases.blob.core.windows.net/gateway-bridge/master/lora-gateway-bridge-darwin-amd64.zip
+[linux-amd64]:https://ttnreleases.blob.core.windows.net/gateway-bridge/master/lora-gateway-bridge-linux-amd64.zip
+[linux-386]:https://ttnreleases.blob.core.windows.net/gateway-bridge/master/lora-gateway-bridge-linux-386.zip
+[linux-arm]:https://ttnreleases.blob.core.windows.net/gateway-bridge/master/lora-gateway-bridge-linux-arm.zip
+[windows-amd64]:https://ttnreleases.blob.core.windows.net/gateway-bridge/master/lora-gateway-bridge-windows-amd64.exe.zip
+[windows-386]:https://ttnreleases.blob.core.windows.net/gateway-bridge/master/lora-gateway-bridge-windows-386.exe.zip
 
-The table below shows the compatibility between LoRa Gateway Bridge and the
-packet_forwarder UDP protocol versions:
+- Make sure you have [Go](https://golang.org) installed (version 1.7 or later).
+- Set up your [Go environment](https://golang.org/doc/code.html#GOPATH)
+- Clone our fork: `git clone https://github.com/TheThingsNetwork/packet-forwarder-bridge.git $GOPATH/src/github.com/brocaar/lora-gateway-bridge`
+- Go to the folder: `cd $GOPATH/src/github.com/brocaar/lora-gateway-bridge`
+- Build: `make deps build install`
 
-| LoRa Gateway Bridge | packet_forwarder protocol version | Note                                                                |
-|---------------------|-----------------------------------|---------------------------------------------------------------------|
-| 1.x.x               | 1                                 |                                                                     |
-| 2.0.x               | 2                                 | This protocol is used since version 3.0.0 of the `packet_forwarder` |
-| >= 2.1.x            | 1 & 2 simultaneously              | Both protocol versions are supported and auto-detected              |
+## Running
 
-## Downloads
-
-Pre-compiled binaries are available from the [releases](https://github.com/brocaar/lora-gateway-bridge/releases) page:
-
-* Linux (including ARM / Raspberry Pi)
-* OS X
-* Windows
-
-Source-code can be found at [https://github.com/brocaar/lora-gateway-bridge](https://github.com/brocaar/lora-gateway-bridge).
-
-## Building from source
-
-The easiest way to get started is by using the provided 
-[docker-compose](https://docs.docker.com/compose/) environment. To start a bash
-shell within the docker-compose environment, execute the following command from
-the root of this project:
-
-```bash
-docker-compose run --rm gatewaybridge bash
+```
+lora-gateway-bridge [options]
 ```
 
-A few example commands that you can run:
+### Options
 
-```bash
-# run the tests
-make test
+| **Flag**                 | **ENV Var**            | **Description** |
+| ------------------------ | ---------------------- | --------------- |
+| `--udp-bind`             | `UDP_BIND`             | ip:port to bind the UDP listener to (default: "0.0.0.0:1700") | 
+| `--ttn-discovery-server` | `TTN_DISCOVERY_SERVER` | host:port of TTN Discovery Server | 
+| `--root-ca-file`         | `ROOT_CA_FILE`         | Root CA file (if discovery server uses TLS) | 
+| `--ttn-router`           | `TTN_ROUTER`           | TTN Router ID |
+| `--ttn-gateway-eui`      | `TTN_GATEWAY_EUI`      | TTN Gateway EUI (optional) |
+| `--ttn-gateway-id`       | `TTN_GATEWAY_ID`       | TTN Gateway ID the EUI should translate to (optional) |
+| `--ttn-gateway-token`    | `TTN_GATEWAY_TOKEN`    | TTN Gateway Token to authenticate the Gateway ID (optional) |
 
-# compile
-make build
+### Example
 
-# cross-compile for Linux ARM
-GOOS=linux GOARCH=arm make build
+If you set up the TTN backend for development (as described in the [README](https://github.com/TheThingsNetwork/ttn/#set-up-the-things-networks-backend-for-development)) you can use the following to start the bridge:
 
-# cross-compile for Windows AMD64
-GOOS=windows BINEXT=.exe GOARCH=amd64 make build
-
-# build the .tar.gz file
-make package
-
-# build the .tar.gz file for Linux ARM
-GOOS=linux GOARCH=arm make build
-
-# build the .tar.gz file for Windows AMD64
-GOOS=windows BINEXT=.exe GOARCH=amd64 make build
+```
+lora-gateway-bridge --ttn-discovery-server localhost:1900 --ttn-router dev
 ```
 
-Alternatively, you can run the same commands from any working
-[Go](https://golang.org/) environment. As all requirements are vendored,
-there is no need to `go get` these, but make sure vendoring is enabled for
-your Go environment or that you have Go 1.6+ installed.
+## Issues / Feature Requests
 
-## Issues / feature-requests
-
-Issues or feature-requests can be opened at [https://github.com/brocaar/lora-gateway-bridge/issues](https://github.com/brocaar/lora-gateway-bridge/issues).
+Issues or feature requests for the bridge can be opened at [github.com/brocaar/lora-gateway-bridge/issues](https://github.com/brocaar/lora-gateway-bridge/issues). Issues or feature requests related to The Things Network can be opened at [github.com/TheThingsNetwork/ttn/issues](https://github.com/TheThingsNetwork/ttn/issues).
 
 ## License
 
