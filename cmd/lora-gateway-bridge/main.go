@@ -49,10 +49,21 @@ func run(c *cli.Context) error {
 	defer ttn.Close()
 	ttn.SetRxRateLimit(10)
 
+	if c.String("ttn-account-server") != "" {
+		if err := ttn.SetAccount(
+			c.String("ttn-account-server"),
+			c.String("ttn-account-client-id"),     // for future use
+			c.String("ttn-account-client-secret"), // for future use
+		); err != nil {
+			log.Errorf("could not set account server: %s", err)
+		}
+	}
+
 	if c.String("ttn-gateway-id") != "" {
 		if err := ttn.AddGateway(
 			c.String("ttn-gateway-eui"),
 			c.String("ttn-gateway-id"),
+			c.String("ttn-gateway-key"),
 			c.String("ttn-gateway-token"),
 		); err != nil {
 			log.Errorf("could not add gateway: %s", err)
@@ -135,6 +146,12 @@ func main() {
 			EnvVar: "UDP_BIND",
 		},
 		cli.StringFlag{
+			Name:   "ttn-account-server",
+			Usage:  "TTN Account Server",
+			Value:  "https://account.thethingsnetwork.org",
+			EnvVar: "TTN_ACCOUNT_SERVER",
+		},
+		cli.StringFlag{
 			Name:   "ttn-discovery-server",
 			Usage:  "TTN Discovery Server",
 			Value:  "localhost:1900",
@@ -163,6 +180,12 @@ func main() {
 			Usage:  "TTN Gateway ID",
 			Value:  "",
 			EnvVar: "TTN_GATEWAY_ID",
+		},
+		cli.StringFlag{
+			Name:   "ttn-gateway-key",
+			Usage:  "TTN Gateway Key",
+			Value:  "",
+			EnvVar: "TTN_GATEWAY_KEY",
 		},
 		cli.StringFlag{
 			Name:   "ttn-gateway-token",

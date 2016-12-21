@@ -6,6 +6,8 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/TheThingsNetwork/go-account-lib/account"
+	"github.com/TheThingsNetwork/go-account-lib/auth"
 	ttnlog "github.com/TheThingsNetwork/go-utils/log"
 	"github.com/TheThingsNetwork/go-utils/log/logrus"
 	pb_discovery "github.com/TheThingsNetwork/ttn/api/discovery"
@@ -26,13 +28,15 @@ func init() {
 }
 
 type gtwConf struct {
-	id    string
-	token string
+	id       string
+	key      string
+	token    string
+	settings account.Gateway
 }
 
 type gtw struct {
 	id       string
-	token    string
+	conf     *gtwConf
 	client   pb_router.RouterClientForGateway
 	uplink   pb_router.UplinkStream
 	status   pb_router.GatewayStatusStream
@@ -57,6 +61,7 @@ const maxBackOff = 5 * time.Minute
 
 // Backend implements the TTN backend
 type Backend struct {
+	accountServer *account.Account
 	routerConn    *grpc.ClientConn
 	routerClient  pb_router.RouterClient
 	rxRateLimit   float64
@@ -82,11 +87,14 @@ func (b *Backend) newGtw(mac lorawan.EUI64) *gtw {
 	if _, ok := b.gateways[mac]; !ok {
 		gatewayID := fmt.Sprintf("eui-%s", mac)
 		gatewayToken := "token"
-		if conf, ok := b.gatewayConf[mac]; ok {
+		conf, ok := b.gatewayConf[mac]
+		if ok {
 			gatewayID = conf.id
 			gatewayToken = conf.token
 		}
 		gateway := &gtw{
+			id:     gatewayID,
+			conf:   conf,
 			client: pb_router.NewRouterClientForGateway(b.routerClient, gatewayID, gatewayToken),
 			rxRate: metrics.NewEWMA1(),
 		}
@@ -154,15 +162,40 @@ func (b *Backend) SetRxRateLimit(limit float64) {
 	b.rxRateLimit = limit
 }
 
+// SetAccount sets the configuration for the account server
+func (b *Backend) SetAccount(server, clientID, clientSecret string) error {
+	b.accountServer = account.New(server)
+	if clientID != "" && clientSecret != "" {
+		b.accountServer = b.accountServer.WithAuth(auth.BasicAuth(clientID, clientSecret))
+	}
+	return nil
+}
+
 // AddGateway adds the configuration of a gateway
-func (b *Backend) AddGateway(euiStr, id, token string) error {
+func (b *Backend) AddGateway(euiStr, id, key, token string) (err error) {
 	var eui lorawan.EUI64
 	if err := eui.UnmarshalText([]byte(euiStr)); err != nil {
 		return err
 	}
+	var gtw account.Gateway
+	if b.accountServer != nil {
+		if token != "" {
+			gtw, err = b.accountServer.WithAuth(auth.AccessToken(token)).FindGateway(id)
+		} else if key != "" {
+			gtw, err = b.accountServer.WithAuth(auth.AccessKey(key)).FindGateway(id)
+		}
+		if err != nil {
+			return err
+		}
+	}
+	if gtw.Token != nil && gtw.Token.AccessToken != "" {
+		token = gtw.Token.AccessToken
+	}
 	b.gatewayConf[eui] = &gtwConf{
-		id:    id,
-		token: token,
+		id:       id,
+		key:      key,
+		token:    token,
+		settings: gtw,
 	}
 	return nil
 }
