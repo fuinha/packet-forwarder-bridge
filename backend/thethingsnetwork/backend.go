@@ -393,5 +393,13 @@ func (b *Backend) PublishGatewayStats(mac lorawan.EUI64, stats gw.GatewayStatsPa
 	if gtw == nil {
 		gtw = b.newGtw(mac)
 	}
-	return gtw.status.Send(b.convertStatsPacket(stats))
+	status := b.convertStatsPacket(stats)
+	if status.Gps == nil && gtw.conf != nil && gtw.conf.settings.Location != nil {
+		status.Gps = &pb_gateway.GPSMetadata{
+			Latitude:  float32(gtw.conf.settings.Location.Latitude),
+			Longitude: float32(gtw.conf.settings.Location.Longitude),
+			Altitude:  int32(gtw.conf.settings.Altitude),
+		}
+	}
+	return gtw.status.Send(status)
 }
