@@ -417,11 +417,24 @@ func (b *Backend) PublishGatewayStats(mac lorawan.EUI64, stats gw.GatewayStatsPa
 	status := b.convertStatsPacket(stats)
 	gtw.confMu.RLock()
 	defer gtw.confMu.RUnlock()
-	if status.Gps == nil && gtw.conf != nil && gtw.conf.settings.Location != nil {
-		status.Gps = &pb_gateway.GPSMetadata{
-			Latitude:  float32(gtw.conf.settings.Location.Latitude),
-			Longitude: float32(gtw.conf.settings.Location.Longitude),
-			Altitude:  int32(gtw.conf.settings.Altitude),
+	if gtw.conf != nil {
+		if status.Gps == nil && gtw.conf.settings.Location != nil {
+			status.Gps = &pb_gateway.GPSMetadata{
+				Latitude:  float32(gtw.conf.settings.Location.Latitude),
+				Longitude: float32(gtw.conf.settings.Location.Longitude),
+				Altitude:  int32(gtw.conf.settings.Altitude),
+			}
+		}
+		if status.Description == "" && gtw.conf.settings.Attributes.Description != nil {
+			status.Description = *gtw.conf.settings.Attributes.Description
+		}
+		if status.Platform == "" {
+			if gtw.conf.settings.Attributes.Brand != nil {
+				status.Platform += *gtw.conf.settings.Attributes.Brand
+			}
+			if gtw.conf.settings.Attributes.Model != nil {
+				status.Platform += " " + *gtw.conf.settings.Attributes.Model
+			}
 		}
 	}
 	return gtw.status.Send(status)
