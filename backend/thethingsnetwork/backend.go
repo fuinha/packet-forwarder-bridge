@@ -37,6 +37,7 @@ type gtwConf struct {
 type gtw struct {
 	id       string
 	conf     *gtwConf
+	confMu   sync.RWMutex // protects the conf
 	client   pb_router.RouterClientForGateway
 	uplink   pb_router.UplinkStream
 	status   pb_router.GatewayStatusStream
@@ -87,8 +88,8 @@ func (b *Backend) newGtw(mac lorawan.EUI64) *gtw {
 	if _, ok := b.gateways[mac]; !ok {
 		gatewayID := fmt.Sprintf("eui-%s", mac)
 		gatewayToken := "token"
-		conf, ok := b.gatewayConf[mac]
-		if ok {
+		conf, hasConf := b.gatewayConf[mac]
+		if hasConf {
 			gatewayID = conf.id
 			gatewayToken = conf.token
 		}
@@ -97,6 +98,26 @@ func (b *Backend) newGtw(mac lorawan.EUI64) *gtw {
 			conf:   conf,
 			client: pb_router.NewRouterClientForGateway(b.routerClient, gatewayID, gatewayToken),
 			rxRate: metrics.NewEWMA1(),
+		}
+		if !hasConf && b.accountServer != nil {
+			go func(gateway *gtw) {
+				gtw, err := b.accountServer.FindGateway(gateway.id)
+				if err != nil {
+					log.WithField("GatewayID", gateway.id).WithError(err).Debug("backend/thethingsnetwork: could not get config for gateway")
+					return
+				}
+				log.WithField("GatewayID", gateway.id).Info("backend/thethingsnetwork: got config for gateway")
+				gateway.confMu.Lock()
+				defer gateway.confMu.Unlock()
+				gateway.conf = &gtwConf{
+					id:       gateway.id,
+					settings: gtw,
+				}
+				if gtw.Token != nil {
+					gateway.conf.token = gtw.Token.AccessToken
+					gateway.client.SetToken(gtw.Token.AccessToken)
+				}
+			}(gateway)
 		}
 		gateway.uplink = pb_router.NewMonitoredUplinkStream(gateway.client)
 		gateway.status = pb_router.NewMonitoredGatewayStatusStream(gateway.client)
@@ -394,6 +415,8 @@ func (b *Backend) PublishGatewayStats(mac lorawan.EUI64, stats gw.GatewayStatsPa
 		gtw = b.newGtw(mac)
 	}
 	status := b.convertStatsPacket(stats)
+	gtw.confMu.RLock()
+	defer gtw.confMu.RUnlock()
 	if status.Gps == nil && gtw.conf != nil && gtw.conf.settings.Location != nil {
 		status.Gps = &pb_gateway.GPSMetadata{
 			Latitude:  float32(gtw.conf.settings.Location.Latitude),
