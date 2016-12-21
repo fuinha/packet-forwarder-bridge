@@ -33,6 +33,9 @@ lora-gateway-bridge [options]
 | **Flag**                 | **ENV Var**            | **Description** |
 | ------------------------ | ---------------------- | --------------- |
 | `--udp-bind`             | `UDP_BIND`             | ip:port to bind the UDP listener to (default: "0.0.0.0:1700") | 
+| `--ttn-account-server`   | `TTN_ACCOUNT_SERVER`   | Account Server URL (default: "https://account.thethingsnetwork.org") |
+| `--ttn-account-client-id` | `TTN_ACCOUNT_CLIENT_ID` | Client ID to authenticate with the Account Server (optional) |
+| `--ttn-account-client-secret` | `TTN_ACCOUNT_CLIENT_SECRET` | Client Secret to authenticate with the Account Server (optional) |
 | `--ttn-discovery-server` | `TTN_DISCOVERY_SERVER` | host:port of TTN Discovery Server | 
 | `--root-ca-file`         | `ROOT_CA_FILE`         | Root CA file (if discovery server uses TLS) | 
 | `--ttn-router`           | `TTN_ROUTER`           | TTN Router ID |

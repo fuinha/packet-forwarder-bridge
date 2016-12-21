@@ -52,8 +52,8 @@ func run(c *cli.Context) error {
 	if c.String("ttn-account-server") != "" {
 		if err := ttn.SetAccount(
 			c.String("ttn-account-server"),
-			c.String("ttn-account-client-id"),     // for future use
-			c.String("ttn-account-client-secret"), // for future use
+			c.String("ttn-account-client-id"),
+			c.String("ttn-account-client-secret"),
 		); err != nil {
 			log.Errorf("could not set account server: %s", err)
 		}
@@ -150,6 +150,18 @@ func main() {
 			Usage:  "TTN Account Server",
 			Value:  "https://account.thethingsnetwork.org",
 			EnvVar: "TTN_ACCOUNT_SERVER",
+		},
+		cli.StringFlag{
+			Name:   "ttn-account-client-id",
+			Usage:  "TTN Account Client ID",
+			Value:  "",
+			EnvVar: "TTN_ACCOUNT_CLIENT_ID",
+		},
+		cli.StringFlag{
+			Name:   "ttn-account-client-secret",
+			Usage:  "TTN Account Client Secret",
+			Value:  "",
+			EnvVar: "TTN_ACCOUNT_CLIENT_SECRET",
 		},
 		cli.StringFlag{
 			Name:   "ttn-discovery-server",
