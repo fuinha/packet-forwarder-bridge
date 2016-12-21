@@ -39,6 +39,7 @@ lora-gateway-bridge [options]
 | `--ttn-gateway-eui`      | `TTN_GATEWAY_EUI`      | TTN Gateway EUI (optional) |
 | `--ttn-gateway-id`       | `TTN_GATEWAY_ID`       | TTN Gateway ID the EUI should translate to (optional) |
 | `--ttn-gateway-token`    | `TTN_GATEWAY_TOKEN`    | TTN Gateway Token to authenticate the Gateway ID (optional) |
+| `--ttn-gateway-key`      | `TTN_GATEWAY_KEY`      | TTN Gateway Key to authenticate the Gateway ID (optional) |
 
 ### Example
 
