@@ -2,6 +2,7 @@ package thethingsnetwork
 
 import (
 	"fmt"
+	"math"
 	"sync"
 	"time"
 
@@ -334,6 +335,10 @@ func (b *Backend) convertRXPacket(rxPacket gw.RXPacketBytes) *pb_router.UplinkMe
 	case band.FSKModulation:
 		modulation = pb_lorawan.Modulation_FSK
 		bitrate = uint32(rxPacket.RXInfo.DataRate.BitRate)
+	}
+
+	if math.Abs(rxPacket.RXInfo.Time.Sub(time.Now()).Seconds()) > 60 {
+		rxPacket.RXInfo.Time = time.Unix(0, 0)
 	}
 
 	return &pb_router.UplinkMessage{
